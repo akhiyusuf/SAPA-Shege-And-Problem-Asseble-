@@ -1,16 +1,20 @@
 
 import React, { useState } from 'react';
-import { ARCHETYPES } from '../constants';
-import { Archetype } from '../types';
+import { ARCHETYPES, DREAM_ITEMS } from '../constants';
+import { Archetype, DreamItem } from '../types';
+import { formatCurrency } from '../services/gameEngine';
 
 interface ArchetypeSelectionProps {
-  onSelect: (archetype: Archetype) => void;
+  onSelect: (archetype: Archetype, dream: DreamItem) => void;
 }
 
 export const ArchetypeSelection: React.FC<ArchetypeSelectionProps> = ({ onSelect }) => {
-  const [selectedId, setSelectedId] = useState<string>('tech_bro');
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedArchetypeId, setSelectedArchetypeId] = useState<string>('tech_bro');
+  const [selectedDreamId, setSelectedDreamId] = useState<string>(DREAM_ITEMS[0].id);
 
-  const activeArchetype = ARCHETYPES.find(a => a.id === selectedId) || ARCHETYPES[0];
+  const activeArchetype = ARCHETYPES.find(a => a.id === selectedArchetypeId) || ARCHETYPES[0];
+  const activeDream = DREAM_ITEMS.find(d => d.id === selectedDreamId) || DREAM_ITEMS[0];
 
   const getDifficultyColor = (diff: string) => {
       switch(diff) {
@@ -24,102 +28,161 @@ export const ArchetypeSelection: React.FC<ArchetypeSelectionProps> = ({ onSelect
       }
   };
 
+  const handleNext = () => {
+    if (step === 1) {
+        setStep(2);
+    } else {
+        onSelect(activeArchetype, activeDream);
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-pattern overflow-x-hidden">
         
         {/* Header */}
         <header className="flex items-center p-6 justify-between z-10 shrink-0">
-            <button className="flex size-10 items-center justify-center rounded-full bg-white/5 border border-white/10 backdrop-blur-md active:scale-90 transition-transform">
-                <span className="material-symbols-outlined text-white text-2xl">chevron_left</span>
-            </button>
+            {step === 2 && (
+                <button onClick={() => setStep(1)} className="flex size-10 items-center justify-center rounded-full bg-white/5 border border-white/10 backdrop-blur-md active:scale-90 transition-transform">
+                    <span className="material-symbols-outlined text-white text-2xl">chevron_left</span>
+                </button>
+            )}
+            {step === 1 && <div className="size-10"></div>}
+            
             <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-[0.2em] text-nigeria-gold font-bold uppercase">Game Start</span>
-                <h2 className="text-white text-lg font-extrabold leading-tight">CHOOSE PATH</h2>
+                <span className="text-[10px] tracking-[0.2em] text-nigeria-gold font-bold uppercase">Setup Phase {step}/2</span>
+                <h2 className="text-white text-lg font-extrabold leading-tight">{step === 1 ? 'CHOOSE CHARACTER' : 'CHOOSE DREAM'}</h2>
             </div>
             <div className="size-10"></div>
         </header>
 
-        {/* Title Section */}
-        <section className="px-6 py-2 z-10 shrink-0">
-            <h3 className="text-3xl font-extrabold leading-tight mb-2">Select Your <span className="text-nigeria-gold">Archetype</span></h3>
-            <p className="text-white/60 text-sm leading-relaxed max-w-[300px]">
-                The Nigerian economy reacts differently to each player. Choose your struggle wisely.
-            </p>
-        </section>
+        {/* STEP 1: ARCHETYPE */}
+        {step === 1 && (
+            <>
+                <section className="px-6 py-2 z-10 shrink-0">
+                    <h3 className="text-3xl font-extrabold leading-tight mb-2">Who are you?</h3>
+                    <p className="text-white/60 text-sm leading-relaxed max-w-[300px]">
+                        The Nigerian economy reacts differently to each player. Choose your struggle wisely.
+                    </p>
+                </section>
 
-        {/* Horizontal Scroll List */}
-        <main className="flex-1 overflow-x-auto custom-scrollbar flex items-center z-10 snap-x snap-mandatory py-4">
-            <div className="flex px-6 gap-4 py-12 h-full items-center">
-                {ARCHETYPES.map((arch) => {
-                    const isActive = selectedId === arch.id;
-                    const diffColors = getDifficultyColor(arch.difficulty);
+                <main className="flex-1 overflow-x-auto custom-scrollbar flex items-center z-10 snap-x snap-mandatory py-4">
+                    <div className="flex px-6 gap-4 py-12 h-full items-center">
+                        {ARCHETYPES.map((arch) => {
+                            const isActive = selectedArchetypeId === arch.id;
+                            const diffColors = getDifficultyColor(arch.difficulty);
 
-                    return (
-                        <div 
-                            key={arch.id}
-                            onClick={() => setSelectedId(arch.id)}
-                            className={`snap-center flex flex-col bg-card-dark rounded-3xl min-w-[280px] max-w-[280px] h-[480px] p-6 border border-white/5 relative transition-all cursor-pointer overflow-hidden ${isActive ? 'active-card' : 'opacity-70 grayscale-[0.5] hover:opacity-100 hover:grayscale-0'}`}
-                        >
-                            <div className={`absolute top-6 right-6 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${diffColors.bg} ${diffColors.text} ${diffColors.border} border`}>
-                                {arch.difficulty}
-                            </div>
-                            
-                            <div className="archetype-icon-wrapper w-full h-40 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
-                                <span className={`material-symbols-outlined text-6xl ${isActive ? 'text-nigeria-gold' : 'text-white/40'}`}>
-                                    {arch.iconName}
-                                </span>
-                            </div>
-
-                            <div className="mb-6">
-                                <h4 className="text-xl font-black text-white">{arch.name}</h4>
-                                <p className="text-white/50 text-xs mt-1 leading-relaxed line-clamp-2">{arch.description}</p>
-                            </div>
-
-                            <div className="mt-auto space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Cash</p>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`material-symbols-outlined text-lg ${isActive ? 'text-nigeria-green' : 'opacity-50 text-nigeria-green'}`}>account_balance_wallet</span>
-                                            <span className="text-sm font-bold">{arch.previewStats.cash}</span>
-                                        </div>
+                            return (
+                                <div 
+                                    key={arch.id}
+                                    onClick={() => setSelectedArchetypeId(arch.id)}
+                                    className={`snap-center flex flex-col bg-card-dark rounded-3xl min-w-[280px] max-w-[280px] h-[480px] p-6 border border-white/5 relative transition-all cursor-pointer overflow-hidden ${isActive ? 'active-card' : 'opacity-70 grayscale-[0.5] hover:opacity-100 hover:grayscale-0'}`}
+                                >
+                                    <div className={`absolute top-6 right-6 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${diffColors.bg} ${diffColors.text} ${diffColors.border} border`}>
+                                        {arch.difficulty}
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Flow</p>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`material-symbols-outlined text-lg ${isActive ? 'text-nigeria-green' : 'opacity-50 text-nigeria-green'}`}>payments</span>
-                                            <span className="text-sm font-bold">{arch.previewStats.flow}</span>
-                                        </div>
+                                    
+                                    <div className="archetype-icon-wrapper w-full h-40 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                                        <span className={`material-symbols-outlined text-6xl ${isActive ? 'text-nigeria-gold' : 'text-white/40'}`}>
+                                            {arch.iconName}
+                                        </span>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Debt</p>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`material-symbols-outlined text-lg ${isActive ? 'text-accent-red' : 'opacity-50 text-accent-red'}`}>credit_card_off</span>
-                                            <span className="text-sm font-bold">{arch.previewStats.debt}</span>
-                                        </div>
+
+                                    <div className="mb-6">
+                                        <h4 className="text-xl font-black text-white">{arch.name}</h4>
+                                        <p className="text-white/50 text-xs mt-1 leading-relaxed line-clamp-2">{arch.description}</p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Rep</p>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`material-symbols-outlined text-lg ${isActive ? 'text-nigeria-gold' : 'opacity-50 text-nigeria-gold'}`}>verified_user</span>
-                                            <span className="text-sm font-bold">{arch.previewStats.rep}</span>
+
+                                    <div className="mt-auto space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Cash</p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`material-symbols-outlined text-lg ${isActive ? 'text-nigeria-green' : 'opacity-50 text-nigeria-green'}`}>account_balance_wallet</span>
+                                                    <span className="text-sm font-bold">{arch.previewStats.cash}</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Flow</p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`material-symbols-outlined text-lg ${isActive ? 'text-nigeria-green' : 'opacity-50 text-nigeria-green'}`}>payments</span>
+                                                    <span className="text-sm font-bold">{arch.previewStats.flow}</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Debt</p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`material-symbols-outlined text-lg ${isActive ? 'text-accent-red' : 'opacity-50 text-accent-red'}`}>credit_card_off</span>
+                                                    <span className="text-sm font-bold">{arch.previewStats.debt}</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Rep</p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`material-symbols-outlined text-lg ${isActive ? 'text-nigeria-gold' : 'opacity-50 text-nigeria-gold'}`}>verified_user</span>
+                                                    <span className="text-sm font-bold">{arch.previewStats.rep}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </main>
+                            );
+                        })}
+                    </div>
+                </main>
+            </>
+        )}
+
+        {/* STEP 2: DREAM */}
+        {step === 2 && (
+            <>
+                <section className="px-6 py-2 z-10 shrink-0">
+                    <h3 className="text-3xl font-extrabold leading-tight mb-2">What is your <span className="text-nigeria-gold">Dream?</span></h3>
+                    <p className="text-white/60 text-sm leading-relaxed max-w-[300px]">
+                        To win, you must buy this item, become debt-free, and escape the rat race.
+                    </p>
+                </section>
+
+                <main className="flex-1 overflow-x-auto custom-scrollbar flex items-center z-10 snap-x snap-mandatory py-4">
+                    <div className="flex px-6 gap-4 py-12 h-full items-center">
+                        {DREAM_ITEMS.map((dream) => {
+                            const isActive = selectedDreamId === dream.id;
+                            
+                            return (
+                                <div 
+                                    key={dream.id}
+                                    onClick={() => setSelectedDreamId(dream.id)}
+                                    className={`snap-center flex flex-col bg-card-dark rounded-3xl min-w-[280px] max-w-[280px] h-[400px] p-6 border border-white/5 relative transition-all cursor-pointer overflow-hidden ${isActive ? 'active-card' : 'opacity-70 grayscale-[0.5] hover:opacity-100 hover:grayscale-0'}`}
+                                >
+                                    <div className="w-full h-40 bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                                        <span className={`material-symbols-outlined text-6xl ${isActive ? 'text-purple-400' : 'text-white/40'}`}>
+                                            {dream.iconName}
+                                        </span>
+                                    </div>
+
+                                    <div className="mb-6 text-center">
+                                        <h4 className="text-2xl font-black text-white mb-2">{dream.name}</h4>
+                                        <p className="text-white/50 text-xs leading-relaxed">{dream.description}</p>
+                                    </div>
+
+                                    <div className="mt-auto text-center">
+                                        <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider block mb-1">Target Cost</span>
+                                        <span className="text-2xl font-mono font-bold text-nigeria-gold">{formatCurrency(dream.cost)}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </main>
+            </>
+        )}
 
         {/* Footer / Confirm Button */}
         <div className="p-6 pb-12 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent pt-12 shrink-0 z-20">
             <button 
-                onClick={() => onSelect(activeArchetype)}
+                onClick={handleNext}
                 className="w-full bg-nigeria-green hover:bg-nigeria-green/90 text-white h-16 rounded-2xl font-black text-lg shadow-[0_8px_30px_rgb(0,135,81,0.3)] flex items-center justify-center gap-3 transition-all active:scale-95 border-b-4 border-black/20"
             >
-                CONFIRM SELECTION
+                {step === 1 ? 'NEXT: CHOOSE DREAM' : 'START GAME'}
                 <span className="material-symbols-outlined font-bold">arrow_forward</span>
             </button>
         </div>

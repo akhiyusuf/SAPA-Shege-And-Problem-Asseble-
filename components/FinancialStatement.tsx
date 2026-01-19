@@ -2,7 +2,7 @@
 import React from 'react';
 import { Player, Asset, Liability } from '../types';
 import { formatCurrency, calculateNetWorth } from '../services/gameEngine';
-import { Briefcase, Building, Coins, Car, CheckCircle, PiggyBank, ArrowRight } from 'lucide-react';
+import { Briefcase, Building, Coins, Car, CheckCircle, PiggyBank, ArrowRight, Clock } from 'lucide-react';
 
 interface FinancialStatementProps {
   player: Player;
@@ -35,9 +35,6 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
             <h1 className="text-5xl font-black text-white tracking-tight">
                 {formatCurrency(netWorth)}
             </h1>
-            <span className="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2 py-1 rounded-full border border-emerald-500/20 mb-2">
-                +2.4%
-            </span>
         </div>
         <div className="h-px w-full bg-[#2d3a35] mb-4"></div>
         <div className="flex gap-8">
@@ -106,7 +103,6 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
             <div className="space-y-3">
                 {player.liabilities.map((liab, idx) => {
                     const canAfford = player.cash >= liab.totalOwed;
-                    const progress = Math.min(100, Math.max(10, Math.random() * 40)); 
                     
                     return (
                         <div key={`liab-${idx}`} className="bg-[#1a2321] p-5 rounded-2xl border border-[#2d3a35]">
@@ -117,7 +113,7 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-white text-sm">{liab.name}</h4>
-                                        <p className="text-slate-500 text-xs">12% APR • -{formatCurrency(liab.monthlyPayment)}/mo</p>
+                                        <p className="text-slate-500 text-xs">Payment: -{formatCurrency(liab.monthlyPayment)}/mo</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -126,8 +122,22 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
                                 </div>
                             </div>
 
+                            {/* Term Progress Bar */}
+                            {liab.termRemaining !== undefined && (
+                                <div className="mb-4">
+                                    <div className="flex justify-between text-[10px] text-slate-500 font-bold mb-1">
+                                        <span className="flex items-center"><Clock className="w-3 h-3 mr-1"/> Loan Term</span>
+                                        <span>{liab.termRemaining} months left</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-[#0f1715] rounded-full overflow-hidden">
+                                        <div className="h-full bg-red-500/50 rounded-full" style={{ width: '100%' }}></div> 
+                                        {/* Ideally width is proportional to paid amount, but we track remaining. */}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#2d3a35]">
-                                <span className="text-xs text-slate-500">Payoff Amount</span>
+                                <span className="text-xs text-slate-500">Early Payoff</span>
                                 <button
                                     onClick={() => onRepayLiability(liab)}
                                     disabled={!canAfford || !isActionPhase}
@@ -171,10 +181,6 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
                         <p className="text-slate-200 text-sm font-medium leading-snug">{log}</p>
                     </div>
                 ))}
-            </div>
-            
-            <div className="mt-6 pt-4 border-t border-[#2d3a35] text-center">
-                <button className="text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-white transition-colors">View Full History</button>
             </div>
          </div>
       </div>

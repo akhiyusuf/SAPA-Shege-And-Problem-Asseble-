@@ -1,18 +1,23 @@
+
 import React, { useState } from 'react';
-import { Player } from '../types';
+import { Player, LifestyleTier } from '../types';
 import { calculateMonthlyCashFlow, calculatePassiveIncome, calculateTotalExpenses, formatCurrency, calculateProgressToFreedom } from '../services/gameEngine';
-import { Wallet, Globe, Users, TrendingUp, Home, Briefcase, ShoppingBag, Truck, AlertCircle, ArrowRight, Heart, Smile } from 'lucide-react';
+import { Wallet, Globe, Users, TrendingUp, Home, Briefcase, ShoppingBag, Truck, AlertCircle, ArrowRight, Heart, Smile, Hammer, Star, ChevronDown } from 'lucide-react';
 
 interface DashboardProps {
   player: Player;
   month: number;
   exchangeRate: number;
   onNextMonth: () => void;
+  onPerformGig: () => void;
+  onLifestyleChange: (tier: LifestyleTier) => void;
+  onBuyDream: () => void;
   isActionPhase: boolean;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRate, onNextMonth, isActionPhase }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRate, onNextMonth, onPerformGig, onLifestyleChange, onBuyDream, isActionPhase }) => {
   const [viewMode, setViewMode] = useState<'income' | 'expenses'>('expenses');
+  const [showLifestyleMenu, setShowLifestyleMenu] = useState(false);
   
   const monthlyCashFlow = calculateMonthlyCashFlow(player, exchangeRate);
   const passiveIncome = calculatePassiveIncome(player.assets, exchangeRate);
@@ -20,11 +25,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRat
   const progress = calculateProgressToFreedom(player, exchangeRate);
   
   const totalIncome = player.salary + passiveIncome;
+  const canAffordDream = player.cash >= player.dreamItem.cost;
 
   const getHealthColor = (val: number) => {
     if (val > 70) return 'text-emerald-400';
     if (val > 30) return 'text-yellow-400';
     return 'text-red-400';
+  };
+
+  const getLifestyleLabel = (tier: LifestyleTier) => {
+      switch(tier) {
+          case 'Low': return 'Low Profile';
+          case 'Middle': return 'Soft Life';
+          case 'High': return 'Lavish';
+      }
   };
 
   return (
@@ -70,12 +84,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRat
         </div>
       </div>
 
-      {/* Desktop Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-24">
+      {/* Hero Card & Active Hustle */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         
         {/* Left Column: Hero Card */}
-        <div className="space-y-6">
-            <div className="bg-[#1a2321] rounded-3xl p-8 border border-[#2d3a35] shadow-lg relative overflow-hidden h-full min-h-[300px] flex flex-col justify-between">
+        <div className="space-y-4">
+            <div className="bg-[#1a2321] rounded-3xl p-8 border border-[#2d3a35] shadow-lg relative overflow-hidden flex flex-col justify-between h-64">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                 
                 <div>
@@ -83,14 +97,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRat
                         <Wallet className="w-5 h-5 text-emerald-500" />
                         <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Monthly Cash Flow</p>
                     </div>
-                    <h1 className={`text-6xl font-black tracking-tight mb-2 ${monthlyCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <h1 className={`text-5xl font-black tracking-tight mb-2 ${monthlyCashFlow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {monthlyCashFlow > 0 ? '+' : ''}{formatCurrency(monthlyCashFlow)}
                     </h1>
-                    <p className="text-slate-500 text-sm">Liquid capital available after all monthly expenses.</p>
                 </div>
 
                 {/* Secondary Metric: Cash on Hand */}
-                <div className="mt-8 bg-[#0f1715]/50 rounded-2xl p-4 flex items-center justify-between border border-white/5 backdrop-blur-sm">
+                <div className="bg-[#0f1715]/50 rounded-2xl p-4 flex items-center justify-between border border-white/5 backdrop-blur-sm mt-auto">
                     <div>
                         <span className={`text-xs font-bold uppercase tracking-wide block mb-1 ${player.cash < 0 ? 'text-red-400' : 'text-slate-400'}`}>
                            {player.cash < 0 ? 'Bank Overdraft' : 'Cash on Hand'}
@@ -99,19 +112,64 @@ export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRat
                            {formatCurrency(player.cash)}
                         </span>
                     </div>
-                    {/* Visual cue for negative cash */}
-                    {player.cash < 0 && (
-                        <div className="px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs font-bold animate-pulse">
-                           SAPA ALERT
-                        </div>
-                    )}
                 </div>
             </div>
+
+            {/* QUICK GIG BUTTON */}
+            <div className="bg-[#1a2321] p-4 rounded-2xl border border-orange-500/30 flex items-center justify-between">
+                <div>
+                    <div className="flex items-center text-orange-400 mb-1">
+                        <Hammer className="w-4 h-4 mr-2" />
+                        <span className="font-bold text-sm uppercase tracking-wide">Do Quick Gig</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500">Trade Energy for Cash. Grind to survive.</p>
+                </div>
+                <button 
+                    onClick={onPerformGig}
+                    disabled={player.health < 10 || !isActionPhase}
+                    className="bg-orange-600 hover:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold text-xs px-4 py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-orange-900/20"
+                >
+                    +₦5,000 <span className="opacity-70 ml-1">(-5 HP)</span>
+                </button>
+            </div>
+            
+            {/* DREAM ITEM TRACKER */}
+            <div className={`bg-[#1a2321] p-4 rounded-2xl border ${player.hasPurchasedDream ? 'border-emerald-500/50 bg-emerald-900/10' : 'border-[#2d3a35]'}`}>
+                <div className="flex justify-between items-start mb-2">
+                     <div>
+                        <div className="flex items-center text-purple-400 mb-1">
+                            <Star className={`w-4 h-4 mr-2 ${player.hasPurchasedDream ? 'fill-purple-400' : ''}`} />
+                            <span className="font-bold text-sm uppercase tracking-wide">Dream Goal</span>
+                        </div>
+                        <p className="text-white font-bold">{player.dreamItem.name}</p>
+                     </div>
+                     <span className="font-mono text-xs text-slate-400">{formatCurrency(player.dreamItem.cost)}</span>
+                </div>
+                
+                {!player.hasPurchasedDream ? (
+                    <button 
+                        onClick={onBuyDream}
+                        disabled={!canAffordDream || !isActionPhase}
+                        className={`w-full py-3 rounded-xl font-bold text-xs mt-2 transition-all ${
+                            canAffordDream 
+                            ? 'bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-900/20' 
+                            : 'bg-[#232d2a] text-slate-500 cursor-not-allowed'
+                        }`}
+                    >
+                        {canAffordDream ? 'Purchase Dream Item' : `Need ${formatCurrency(Math.max(0, player.dreamItem.cost - player.cash))} more`}
+                    </button>
+                ) : (
+                    <div className="w-full py-2 bg-emerald-500/20 text-emerald-400 rounded-lg text-center font-bold text-xs mt-2 border border-emerald-500/30">
+                        ACHIEVED
+                    </div>
+                )}
+            </div>
+
         </div>
 
         {/* Right Column: Breakdown */}
-        <div className="bg-[#1a2321] rounded-3xl p-6 border border-[#2d3a35] h-full">
-            <div className="flex items-center justify-between mb-6">
+        <div className="bg-[#1a2321] rounded-3xl p-6 border border-[#2d3a35] h-full flex flex-col">
+            <div className="flex items-center justify-between mb-6 shrink-0">
                 <h3 className="text-lg font-bold text-white">Income vs Expenses</h3>
                 <div className="flex bg-[#0f1715] p-1 rounded-lg border border-[#2d3a35]">
                     <button 
@@ -129,7 +187,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRat
                 </div>
             </div>
 
-            <div className="space-y-3 h-[320px] overflow-y-auto scrollbar-hide pr-2">
+            {viewMode === 'expenses' && (
+                <div className="relative mb-4 z-20">
+                    <button 
+                        onClick={() => setShowLifestyleMenu(!showLifestyleMenu)}
+                        className="w-full flex items-center justify-between bg-[#0f1715] p-3 rounded-xl border border-[#2d3a35] hover:border-emerald-500/30 transition-colors"
+                    >
+                        <div>
+                            <span className="text-[10px] text-slate-500 uppercase font-bold block">Current Lifestyle</span>
+                            <span className="text-white font-bold">{getLifestyleLabel(player.lifestyle)}</span>
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+                    
+                    {showLifestyleMenu && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a2321] border border-[#2d3a35] rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            {(['Low', 'Middle', 'High'] as LifestyleTier[]).map(tier => (
+                                <button
+                                    key={tier}
+                                    onClick={() => {
+                                        onLifestyleChange(tier);
+                                        setShowLifestyleMenu(false);
+                                    }}
+                                    className={`w-full text-left p-3 text-xs font-bold hover:bg-[#2d3a35] flex justify-between ${player.lifestyle === tier ? 'text-emerald-400 bg-[#2d3a35]/50' : 'text-slate-300'}`}
+                                >
+                                    <span>{getLifestyleLabel(tier)}</span>
+                                    {player.lifestyle === tier && <span className="text-[10px] uppercase">Active</span>}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <div className="space-y-3 overflow-y-auto scrollbar-hide pr-2 flex-grow max-h-[250px]">
                 {viewMode === 'expenses' ? (
                     <>
                         <ListItem icon={<Home />} label="Rent" sub="Monthly" amount={-player.expenses.rent} />
@@ -164,7 +255,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ player, month, exchangeRat
                 )}
             </div>
              
-             <div className="mt-4 pt-4 border-t border-[#2d3a35] flex justify-between items-center">
+             <div className="mt-4 pt-4 border-t border-[#2d3a35] flex justify-between items-center shrink-0">
                 <span className="text-slate-400 text-xs font-bold uppercase">Total {viewMode}</span>
                 <span className={`font-mono font-bold text-lg ${viewMode === 'income' ? 'text-emerald-400' : 'text-white'}`}>
                     {formatCurrency(viewMode === 'income' ? totalIncome : totalExpenses)}
@@ -202,7 +293,7 @@ const ListItem: React.FC<{ icon: React.ReactNode, label: string, sub: string, am
                     <p className="text-white font-bold text-sm">{label}</p>
                     {isInfo && <div className="ml-1 w-3 h-3 rounded-full bg-slate-600 text-[8px] flex items-center justify-center text-white">i</div>}
                 </div>
-                <p className="text-slate-500 text-[10px]">{sub}</p>
+                <p className="text-slate-500 text-xs">{sub}</p>
             </div>
         </div>
         <p className={`font-mono font-bold text-sm ${isPositive ? 'text-emerald-400' : 'text-white'}`}>

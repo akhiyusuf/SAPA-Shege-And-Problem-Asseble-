@@ -1,6 +1,6 @@
 
 import { Player, Asset, Liability, GameEvent, GameState } from '../types';
-import { EVENTS } from '../constants';
+import { EVENTS, LIFESTYLE_MULTIPLIERS, VICTORY_MULTIPLIER } from '../constants';
 
 export const formatCurrency = (amount: number, currency: 'NGN' | 'USD' = 'NGN'): string => {
   if (currency === 'USD') {
@@ -28,7 +28,11 @@ export const calculateTotalLiabilities = (liabilities: Liability[]): number => {
 export const calculateNetWorth = (player: Player): number => {
   const assets = calculateTotalAssets(player.assets);
   const liabilities = calculateTotalLiabilities(player.liabilities);
-  return (assets + player.cash) - liabilities;
+  
+  // IMPORTANT: Include Dream Item value if purchased
+  const dreamValue = player.hasPurchasedDream ? player.dreamItem.cost : 0;
+  
+  return (assets + dreamValue + player.cash) - liabilities;
 };
 
 export const calculatePassiveIncome = (assets: Asset[], exchangeRate: number): number => {
@@ -45,6 +49,20 @@ export const calculateTotalExpenses = (expenses: Player['expenses'], liabilities
   const liabilityPayments = liabilities.reduce((total, item) => total + item.monthlyPayment, 0);
   const livingExpenses = Object.values(expenses).reduce((total, val) => total + val, 0);
   return livingExpenses + liabilityPayments;
+};
+
+// Applies multiplier to variable living expenses (Rent, Food, Transport, Other)
+// Tax is usually a function of salary, but for simplicity here we scale it or leave it. 
+// Let's scale everything except Tax for lifestyle.
+export const recalculateLifestyleExpenses = (baseExpenses: Player['baseExpenses'], lifestyle: Player['lifestyle']): Player['expenses'] => {
+    const multiplier = LIFESTYLE_MULTIPLIERS[lifestyle];
+    return {
+        tax: baseExpenses.tax, // Tax doesn't change with lifestyle directly (simplified)
+        rent: Math.floor(baseExpenses.rent * multiplier),
+        food: Math.floor(baseExpenses.food * multiplier),
+        transport: Math.floor(baseExpenses.transport * multiplier),
+        other: Math.floor(baseExpenses.other * multiplier)
+    };
 };
 
 export const calculateMonthlyCashFlow = (player: Player, exchangeRate: number): number => {
@@ -94,8 +112,6 @@ export const selectRandomEvent = (player: Player, state: GameState): GameEvent =
     }
 
     // 3. Check Specific Asset ID Requirements (New)
-    // Checks if player has any asset whose ID *starts with* the required string
-    // e.g. requiresAssetId='mkt_pos' matches 'mkt_pos_123456789'
     if (event.requiresAssetId) {
         const hasSpecificAsset = player.assets.some(a => a.id.startsWith(event.requiresAssetId!));
         if (!hasSpecificAsset) return false;
@@ -103,6 +119,9 @@ export const selectRandomEvent = (player: Player, state: GameState): GameEvent =
 
     // 4. Check Social Capital
     if (event.minSocialCapital && player.socialCapital < event.minSocialCapital) return false;
+
+    // 5. Check Max Mood (New: For low mood events)
+    if (event.maxMood !== undefined && player.mood > event.maxMood) return false;
 
     return true;
   });
@@ -143,4 +162,17 @@ export const calculateUsedBankCredit = (player: Player): number => {
 export const calculateSharkLimit = (player: Player): number => {
   // Sharks give you whatever you want, but let's cap it at 50% of monthly income * 10 to prevent game breaking
   return (player.salary * 10) + 500000; 
+};
+
+// --- Win Condition ---
+export const checkIsVictorious = (player: Player, exchangeRate: number): boolean => {
+    const passiveIncome = calculatePassiveIncome(player.assets, exchangeRate);
+    const totalExpenses = calculateTotalExpenses(player.expenses, player.liabilities);
+    const hasEnoughIncome = passiveIncome > (totalExpenses * VICTORY_MULTIPLIER);
+    
+    // New Requirements:
+    const isDebtFree = player.liabilities.length === 0;
+    const hasDream = player.hasPurchasedDream;
+
+    return hasEnoughIncome && isDebtFree && hasDream;
 };

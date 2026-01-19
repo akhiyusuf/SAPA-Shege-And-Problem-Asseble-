@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Player, MarketItem } from '../types';
 import { MARKET_ITEMS } from '../constants';
-import { formatCurrency, calculateBankCreditLimit, calculateUsedBankCredit } from '../services/gameEngine';
-import { ShoppingCart, Briefcase, Car, Coins, AlertTriangle, ArrowUpRight, Building2, Wallet } from 'lucide-react';
+import { formatCurrency, calculateUsedBankCredit } from '../services/gameEngine';
+import { ShoppingCart, Briefcase, Car, Coins, AlertTriangle, Building2, Wallet } from 'lucide-react';
 
 interface MarketplaceProps {
   player: Player;
@@ -12,34 +12,15 @@ interface MarketplaceProps {
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ player, onBuy, isActionPhase }) => {
-  // We use a small state to track which "Buy" modal is effectively active or just handle inline
-  // For simplicity, we handle it inline per card
-  
-  // Calculate credit availability globally for the view
-  // Note: We might want to pass month down to calculate exact limit, 
-  // but let's assume limit is somewhat static or we assume a conservative estimate if month isn't available
-  // To fix this cleanly, we can calculate credit inside the component or pass it in. 
-  // Let's rely on what we can compute. Since month isn't in props, we will assume a base limit 
-  // or update the signature. Actually, let's update App.tsx to pass credit limit or just check it inside onBuy logic
-  // BUT visually we want to disable buttons.
-  // Let's modify the Props to include creditLimit.
-  // WAIT: App.tsx doesn't pass month to Marketplace currently. 
-  // I will cheat slightly: I will assume Month 1 for visual calc if not provided, 
-  // OR better: Just calculate used credit and show if they have "Asset Financing" generally available.
-  // Actually, I can allow the click and let App handle the rejection if limit is exceeded, 
-  // but better UX is to check here.
-  // Let's stick to checking `player.cash` for cash purchases. 
-  // For Bank, we need the limit. I'll update the component to accept `bankLimit`.
-
   // Re-defined locally for now to calculate visual state, ideally passed from parent
-  const bankLimit = 200000 + (player.socialCapital * 10000) + (player.salary * 3) + (1 * 100000); // Estimating Month 1 base
-  const usedCredit = calculateUsedBankCredit(player);
-  const availableCredit = bankLimit - usedCredit;
+  const bankLimit = 200000 + (player.socialCapital * 10000) + (player.salary * 3) + (1 * 100000); 
+  // Note: Actual logic in App.tsx checks real limit. Visual estimate only.
 
   const getIcon = (type: string) => {
     switch(type) {
       case 'Business': return <Briefcase className="w-5 h-5" />;
       case 'Side Hustle': return <Coins className="w-5 h-5" />;
+      case 'Real Estate': return <Building2 className="w-5 h-5" />;
       case 'Asset': return <Car className="w-5 h-5" />;
       default: return <ShoppingCart className="w-5 h-5" />;
     }
@@ -56,6 +37,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ player, onBuy, isActio
      if (risk < 0.35) return 'Medium Risk';
      return 'High Risk';
   };
+  
+  const getTierColor = (tier: string) => {
+      switch(tier) {
+          case 'High': return 'border-purple-500/50 bg-purple-900/10';
+          case 'Middle': return 'border-blue-500/50 bg-blue-900/10';
+          default: return 'border-[#2d3a35]';
+      }
+  };
+
+  const sortedItems = [...MARKET_ITEMS].sort((a,b) => a.cost - b.cost);
 
   return (
     <div className="pb-24 md:pb-10">
@@ -84,13 +75,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ player, onBuy, isActio
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {MARKET_ITEMS.map((item) => {
+        {sortedItems.map((item) => {
           const canAffordCash = player.cash >= item.cost;
-          // Visual check only - the real check happens in App.tsx with exact month data
-          const canAffordBank = true; // We let them click, and show error if limit exceeded
 
           return (
-            <div key={item.id} className="bg-[#1a2321] rounded-2xl border border-[#2d3a35] overflow-hidden flex flex-col hover:border-emerald-500/30 transition-colors group">
+            <div key={item.id} className={`bg-[#1a2321] rounded-2xl border overflow-hidden flex flex-col hover:border-emerald-500/30 transition-colors group ${getTierColor(item.tier)}`}>
               <div className="p-6 flex-grow">
                  <div className="flex justify-between items-start mb-4">
                     <div className="p-3 rounded-xl bg-[#232d2a] text-slate-300 group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-colors">
@@ -103,7 +92,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ player, onBuy, isActio
                  </div>
 
                  <h3 className="font-bold text-white text-xl mb-1">{item.name}</h3>
-                 <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4 block">{item.type}</span>
+                 <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4 block">{item.type} • {item.tier} Class</span>
                  
                  <p className="text-slate-400 text-xs mb-6 leading-relaxed line-clamp-2 min-h-[2.5em]">{item.description}</p>
                  

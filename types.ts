@@ -2,6 +2,15 @@
 export type AssetType = 'Business' | 'Real Estate' | 'Paper Asset' | 'Side Hustle';
 export type LiabilityType = 'Loan' | 'Expense' | 'Family Obligation';
 export type Currency = 'NGN' | 'USD';
+export type LifestyleTier = 'Low' | 'Middle' | 'High';
+
+export interface DreamItem {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  iconName: string;
+}
 
 export interface Asset {
   id: string;
@@ -20,6 +29,7 @@ export interface Liability {
   type: LiabilityType;
   totalOwed: number;
   monthlyPayment: number;
+  termRemaining?: number; // Months left to pay off
 }
 
 export interface Archetype {
@@ -59,7 +69,14 @@ export interface Player {
   salary: number;
   assets: Asset[];
   liabilities: Liability[];
-  expenses: {
+  baseExpenses: { // Renamed from expenses to baseExpenses
+    tax: number;
+    rent: number;
+    food: number;
+    transport: number;
+    other: number;
+  };
+  expenses: { // Calculated expenses based on lifestyle
     tax: number;
     rent: number;
     food: number;
@@ -67,6 +84,9 @@ export interface Player {
     other: number;
   };
   children: number;
+  lifestyle: LifestyleTier; // Current lifestyle tier
+  dreamItem: DreamItem; // Selected dream goal
+  hasPurchasedDream: boolean;
 }
 
 export type EventType = 'Opportunity' | 'Shock' | 'Market' | 'Social' | 'Economic' | 'Career';
@@ -122,6 +142,7 @@ export interface GameEvent {
   requiresAssetType?: AssetType;
   requiresAssetId?: string; // New: Checks if player has asset with ID starting with this string
   minSocialCapital?: number;
+  maxMood?: number; // New: Event only triggers if mood is below this value
 }
 
 export interface MarketItem {
@@ -131,6 +152,7 @@ export interface MarketItem {
   cost: number;
   cashFlow: number;
   type: AssetType;
+  tier: 'Low' | 'Middle' | 'High'; // New field for classification
   risk: number; // 0 to 1 (Failure chance)
   riskDescription: string;
   onFailureMessage: string;
@@ -142,4 +164,5 @@ export interface GameState {
   log: string[];
   exchangeRate: number; // NGN per USD
   flags: Record<string, boolean>; // Global event flags (e.g., "subsidy_removed")
+  netWorthHistory: { month: number; value: number }[]; // Track history for graph
 }

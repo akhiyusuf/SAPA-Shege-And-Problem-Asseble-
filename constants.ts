@@ -1,8 +1,45 @@
 
-import { Archetype, GameEvent, MarketItem } from './types';
+import { Archetype, GameEvent, MarketItem, DreamItem, LifestyleTier } from './types';
 
-export const VICTORY_MULTIPLIER = 1.2; // Passive Income must be 1.2x Total Expenses
+export const VICTORY_MULTIPLIER = 1.0; // Passive Income must be > Total Expenses
 export const INITIAL_EXCHANGE_RATE = 1500;
+
+export const LIFESTYLE_MULTIPLIERS: Record<LifestyleTier, number> = {
+  'Low': 1,
+  'Middle': 2.5,
+  'High': 6
+};
+
+export const DREAM_ITEMS: DreamItem[] = [
+  {
+    id: 'dream_japa',
+    name: 'Japa to Canada',
+    description: 'Relocate permanently with full family visa and settlement funds.',
+    cost: 15000000,
+    iconName: 'flight_takeoff'
+  },
+  {
+    id: 'dream_house',
+    name: 'Mansion in Lekki',
+    description: 'A 5-bedroom fully detached duplex in a secure estate.',
+    cost: 120000000,
+    iconName: 'villa'
+  },
+  {
+    id: 'dream_car',
+    name: 'Brand New G-Wagon',
+    description: 'The ultimate status symbol on Nigerian roads.',
+    cost: 65000000,
+    iconName: 'directions_car'
+  },
+  {
+    id: 'dream_philanthropy',
+    name: 'Build a School',
+    description: 'Give back to the community by building a free school.',
+    cost: 40000000,
+    iconName: 'school'
+  }
+];
 
 export const ARCHETYPES: Archetype[] = [
   {
@@ -112,26 +149,27 @@ export const ARCHETYPES: Archetype[] = [
   {
     id: 'hustler',
     name: 'The Hustler',
-    description: 'Multiple side gigs, but the debt collectors are faster than the income.',
+    description: 'Multiple side gigs, debt is choking you. You must grind to survive.',
     profession: 'Gig Worker',
     salary: 100000,
-    savings: 12000,
+    savings: 20000,
     expenses: {
       tax: 0,
-      rent: 40000,
+      rent: 30000,
       food: 30000,
-      transport: 30000,
-      other: 10000,
+      transport: 20000,
+      other: 0,
     },
     liabilities: [
-        { id: 'l_shark', name: 'Loan Shark', type: 'Loan', totalOwed: 1500000, monthlyPayment: 150000 }
+        // Adjusted: 1.5M debt, but "Interest Only" payments to make survival theoretically possible
+        { id: 'l_shark', name: 'Loan Shark (Interest Only)', type: 'Loan', totalOwed: 1500000, monthlyPayment: 60000 }
     ],
     difficulty: 'Extreme',
     startingSocialCapital: 10,
     iconName: 'running_with_errors',
     previewStats: {
-        cash: '₦12k',
-        flow: 'Tenuous',
+        cash: '₦20k',
+        flow: '-₦40k',
         debt: '₦1.5M',
         rep: 'Risky'
     }
@@ -168,60 +206,118 @@ export const ARCHETYPES: Archetype[] = [
 // --- MARKET OPPORTUNITIES ---
 
 export const MARKET_ITEMS: MarketItem[] = [
+  // --- LOW CLASS ---
   {
     id: 'mkt_pos',
     name: 'POS Business',
-    description: 'Setup a Point of Sale stand at a busy junction. High volume, high risk of theft.',
+    description: 'Setup a Point of Sale stand at a busy junction. High volume.',
     cost: 80000,
     cashFlow: 12000,
     type: 'Business',
+    tier: 'Low',
     risk: 0.15,
     riskDescription: '15% chance the agent runs away with your startup capital.',
     onFailureMessage: 'The "Agent" you hired disappeared with the machine and your cash on day one.'
   },
   {
     id: 'mkt_okrika',
-    name: 'Okrika Bale (First Grade)',
-    description: 'Import and sell thrift clothes. Very high margins if the quality is good.',
+    name: 'Okrika Bale',
+    description: 'Import and sell thrift clothes. Very high margins.',
     cost: 150000,
     cashFlow: 25000,
     type: 'Business',
+    tier: 'Low',
     risk: 0.25,
     riskDescription: '25% chance of buying a "bad bale" (rags).',
     onFailureMessage: 'You opened the bale and it was full of rags. Complete loss.'
-  },
-  {
-    id: 'mkt_bike',
-    name: 'Okada (Delivery Bike)',
-    description: 'Buy a bike for logistics/delivery. Constant demand.',
-    cost: 450000,
-    cashFlow: 50000,
-    type: 'Business',
-    risk: 0.1,
-    riskDescription: '10% chance of immediate seizure by Task Force during delivery.',
-    onFailureMessage: 'The bike was seized by Task Force on the way from the showroom.'
-  },
-  {
-    id: 'mkt_data',
-    name: 'Data Reselling API',
-    description: 'Automated data selling website.',
-    cost: 50000,
-    cashFlow: 5000,
-    type: 'Side Hustle',
-    risk: 0.4,
-    riskDescription: '40% chance the API provider scams you.',
-    onFailureMessage: 'The API provider shut down after taking your deposit.'
   },
   {
     id: 'mkt_perfume',
     name: 'Perfume Oils',
     description: 'Resell oil perfumes. Low barrier to entry.',
     cost: 20000,
-    cashFlow: 3000,
+    cashFlow: 4000, 
     type: 'Side Hustle',
+    tier: 'Low',
     risk: 0.05,
     riskDescription: '5% chance bottles break during shipping.',
     onFailureMessage: 'The delivery guy smashed the package. Oils everywhere.'
+  },
+
+  // --- MIDDLE CLASS ---
+  {
+    id: 'mkt_pharmacy',
+    name: 'Community Pharmacy',
+    description: 'Open a registered pharmacy store in a residential area.',
+    cost: 3500000,
+    cashFlow: 250000,
+    type: 'Business',
+    tier: 'Middle',
+    risk: 0.1,
+    riskDescription: '10% chance of NAFDAC sealing the premises.',
+    onFailureMessage: 'NAFDAC sealed the shop due to "improper documentation". Heavy fines.'
+  },
+  {
+    id: 'mkt_uber',
+    name: 'Uber Car Fleet',
+    description: 'Buy a used Corolla for e-hailing. Weekly remittance.',
+    cost: 4500000,
+    cashFlow: 180000,
+    type: 'Business',
+    tier: 'Middle',
+    risk: 0.3,
+    riskDescription: '30% chance the driver wrecks the car.',
+    onFailureMessage: 'The driver crashed the car and vanished. Insurance was expired.'
+  },
+  {
+    id: 'mkt_logistics',
+    name: 'Logistics Bikes (3x)',
+    description: 'Fleet of 3 delivery bikes servicing e-commerce vendors.',
+    cost: 1800000,
+    cashFlow: 120000,
+    type: 'Business',
+    tier: 'Middle',
+    risk: 0.2,
+    riskDescription: '20% chance of seizure by local govt.',
+    onFailureMessage: 'LG officials seized the bikes for "sticker violation".'
+  },
+
+  // --- HIGH CLASS ---
+  {
+    id: 'mkt_gas',
+    name: 'Cooking Gas Plant',
+    description: 'Medium sized LPG refill station. Essential commodity.',
+    cost: 25000000,
+    cashFlow: 1800000,
+    type: 'Business',
+    tier: 'High',
+    risk: 0.15,
+    riskDescription: '15% chance of fire hazard or regulatory shutdown.',
+    onFailureMessage: 'DPR revoked the license due to safety proximity violations.'
+  },
+  {
+    id: 'mkt_realestate',
+    name: 'Rental Apartment Block',
+    description: 'Block of 4 flats in a developing area. Steady yearly rent.',
+    cost: 65000000,
+    cashFlow: 3500000, // Monthly avg
+    type: 'Real Estate',
+    tier: 'High',
+    risk: 0.05,
+    riskDescription: '5% chance of Omo-Onile issues.',
+    onFailureMessage: 'Omo-Onile came with court injunction claiming the land.'
+  },
+  {
+    id: 'mkt_tech',
+    name: 'Angel Invest in Fintech',
+    description: 'Seed funding for a promising payment gateway.',
+    cost: 15000000,
+    cashFlow: 0, // No cashflow, capital gains play
+    type: 'Paper Asset',
+    tier: 'High',
+    risk: 0.7,
+    riskDescription: '70% chance startup fails. 10x return if successful upon exit.',
+    onFailureMessage: 'The founders pivoted to selling shoes, then shut down.'
   }
 ];
 
@@ -229,6 +325,68 @@ export const MARKET_ITEMS: MarketItem[] = [
 // --- EVENTS ---
 
 export const EVENTS: GameEvent[] = [
+  // --- LOW MOOD EVENTS (New) ---
+  {
+    id: 'shock_burnout',
+    title: 'Mental Burnout',
+    description: 'You have been grinding too hard. Your mind is foggy and you cannot focus.',
+    type: 'Shock',
+    weight: 10, // High weight if mood is low
+    maxMood: 20, // Only appears if Mood <= 20
+    choices: [
+      {
+        id: 'burnout_rest',
+        label: 'Take Forced Rest',
+        description: 'Sleep for 3 days. Lose side hustle income this month.',
+        onSuccess: {
+          message: 'You slept like a baby. Energy restored, but wallet suffered.',
+          moodChange: 30,
+          healthChange: 10,
+          cashChange: -10000 // Lost potential income
+        }
+      },
+      {
+        id: 'burnout_push',
+        label: 'Push Through with Energy Drinks',
+        description: 'Refuse to stop. High health risk.',
+        onSuccess: {
+          message: 'You survived the month on caffeine.',
+          healthChange: -15,
+          moodChange: -5
+        }
+      }
+    ]
+  },
+  {
+    id: 'shock_retail_therapy',
+    title: 'Impulsive Spending',
+    description: 'You are depressed and need a dopamine hit. You find yourself at Shoprite.',
+    type: 'Shock',
+    weight: 8,
+    maxMood: 30, // Mood <= 30
+    choices: [
+      {
+        id: 'retail_buy',
+        label: 'Buy Comfort Items',
+        description: 'Spend ₦25,000 on unnecessary things.',
+        cost: 25000,
+        onSuccess: {
+          message: 'It felt good for 5 minutes.',
+          moodChange: 15
+        }
+      },
+      {
+        id: 'retail_resist',
+        label: 'Resist the Urge',
+        description: 'Go home and stare at the ceiling.',
+        onSuccess: {
+          message: 'You saved money but feel miserable.',
+          moodChange: -5
+        }
+      }
+    ]
+  },
+
   // --- ASSET SPECIFIC PROBLEMS ---
   {
     id: 'prob_pos_robbery',
@@ -290,36 +448,6 @@ export const EVENTS: GameEvent[] = [
       }
     ]
   },
-  {
-    id: 'prob_bike_police',
-    title: 'Task Force Raid',
-    description: 'Your rider was caught in a restricted area. They want to crush the bike.',
-    type: 'Shock',
-    requiresAssetId: 'mkt_bike',
-    weight: 4,
-    choices: [
-      {
-        id: 'bike_bail',
-        label: 'Bail the Bike',
-        cost: 50000,
-        onSuccess: {
-          message: 'You paid the "fine". The bike is released.',
-          moodChange: -5
-        }
-      },
-      {
-        id: 'bike_leave',
-        label: 'Leave it',
-        description: 'It is too expensive to release.',
-        onSuccess: {
-          message: 'The bike is gone. Asset lost.',
-          assetLostId: 'mkt_bike',
-          moodChange: -20
-        }
-      }
-    ]
-  },
-
 
   // --- CAREER / SALARY ---
   {
