@@ -45,7 +45,7 @@ export const ARCHETYPES: Archetype[] = [
   {
     id: 'tech_bro',
     name: 'The Tech Bro',
-    description: 'Remote USD earner. Inflation is just a number to you.',
+    description: 'Remote USD earner. You live in a bubble, shielded from the harsh economy.',
     profession: 'Senior Backend Engineer',
     salary: 2500000,
     savings: 8000000,
@@ -70,132 +70,137 @@ export const ARCHETYPES: Archetype[] = [
   {
     id: 'civil_servant',
     name: 'The Civil Servant',
-    description: 'Job security is high, but the extended family demands are higher.',
+    description: 'Job security is high, but the Cooperative Loan is deducting from source.',
     profession: 'Level 12 Officer',
     salary: 250000,
-    savings: 400000,
+    savings: 200000,
     expenses: {
       tax: 25000,
       rent: 60000,
       food: 50000,
       transport: 30000,
-      other: 60000, // Heavy Black Tax
+      other: 40000, 
     },
     liabilities: [
-      { id: 'l_coop', name: 'Cooperative Loan', type: 'Loan', totalOwed: 500000, monthlyPayment: 20000 }
+      { id: 'l_coop', name: 'Cooperative Loan', type: 'Loan', totalOwed: 800000, monthlyPayment: 35000 }
     ],
     difficulty: 'Normal',
     startingSocialCapital: 70,
     iconName: 'business_center',
     previewStats: {
-        cash: '₦400k',
-        flow: '₦5k',
-        debt: '₦500k',
+        cash: '₦200k',
+        flow: '₦10k',
+        debt: '₦800k',
         rep: 'High'
     }
   },
   {
     id: 'trader',
     name: 'The Market Trader',
-    description: 'Cash rich but asset poor. You move millions but sleep with one eye open.',
+    description: 'You move millions, but your shop rent is due and sales are slow.',
     profession: 'Electronics Importer',
     salary: 800000,
-    savings: 2500000, // Working Capital
+    savings: 1500000, 
     expenses: {
-      tax: 20000, // Informal sector
-      rent: 200000, // Shop + House
+      tax: 20000, 
+      rent: 200000, 
       food: 100000,
       transport: 100000,
       other: 100000,
     },
-    liabilities: [],
+    liabilities: [
+        { id: 'l_supplier', name: 'Supplier Credit', type: 'Loan', totalOwed: 1200000, monthlyPayment: 150000 }
+    ],
     difficulty: 'Hard',
     startingSocialCapital: 85,
     iconName: 'storefront',
     previewStats: {
-        cash: '₦2.5M',
-        flow: '₦280k',
-        debt: '₦0',
+        cash: '₦1.5M',
+        flow: '₦130k',
+        debt: '₦1.2M',
         rep: 'Elite'
     }
   },
   {
     id: 'corper',
     name: 'The Corper',
-    description: 'Federal Allawee + PPA. It is not much, but it is honest work.',
+    description: 'Allawee is 33k. You took a loan to buy an iPhone to "package".',
     profession: 'NYSC Member',
-    salary: 55000, // 33k Allawee + 22k PPA
-    savings: 50000,
+    salary: 55000, 
+    savings: 20000,
     expenses: {
       tax: 0,
-      rent: 0, // Usually provided or squatter
+      rent: 0, 
       food: 30000,
       transport: 15000,
       other: 5000,
     },
-    liabilities: [],
+    liabilities: [
+        { id: 'l_bnpl', name: 'BNPL Phone Debt', type: 'Loan', totalOwed: 180000, monthlyPayment: 15000 }
+    ],
     difficulty: 'Very Hard',
     startingSocialCapital: 30,
     iconName: 'military_tech',
     previewStats: {
-        cash: '₦50k',
-        flow: '₦5k',
-        debt: '₦0',
-        rep: 'Basic'
-    }
-  },
-  {
-    id: 'hustler',
-    name: 'The Hustler',
-    description: 'Multiple side gigs, debt is choking you. You must grind to survive.',
-    profession: 'Gig Worker',
-    salary: 100000,
-    savings: 20000,
-    expenses: {
-      tax: 0,
-      rent: 30000,
-      food: 30000,
-      transport: 20000,
-      other: 0,
-    },
-    liabilities: [
-        { id: 'l_shark', name: 'Loan Shark (Interest Only)', type: 'Loan', totalOwed: 1500000, monthlyPayment: 60000 }
-    ],
-    difficulty: 'Extreme',
-    startingSocialCapital: 10,
-    iconName: 'running_with_errors',
-    previewStats: {
         cash: '₦20k',
-        flow: '-₦40k',
-        debt: '₦1.5M',
-        rep: 'Risky'
+        flow: '-₦10k',
+        debt: '₦180k',
+        rep: 'Basic'
     }
   },
   {
     id: 'student',
     name: 'The Student',
-    description: 'Allowances are late. Fees are due. Welcome to the trenches.',
+    description: 'Allowances stopped coming. You borrowed from loan apps to pay school fees.',
     profession: 'Undergraduate',
-    salary: 30000, // Allowance
-    savings: 10000,
+    salary: 30000, // Irregular allowance
+    savings: 5000,
     expenses: {
       tax: 0,
       rent: 0,
-      food: 20000,
+      food: 25000,
       transport: 10000,
       other: 5000,
     },
     liabilities: [
-        { id: 'l_school', name: 'School Fees Arrears', type: 'Loan', totalOwed: 250000, monthlyPayment: 0 }
+        { id: 'l_loan_app_1', name: 'QuickCash App (Overdue)', type: 'Loan', totalOwed: 50000, monthlyPayment: 12000 },
+        { id: 'l_loan_app_2', name: 'FairMoney Loan', type: 'Loan', totalOwed: 40000, monthlyPayment: 8000 }
     ],
-    difficulty: 'Impossible',
+    difficulty: 'Extreme',
     startingSocialCapital: 15,
     iconName: 'school',
     previewStats: {
-        cash: '₦10k',
-        flow: '-₦5k',
-        debt: '₦250k',
+        cash: '₦5k',
+        flow: '-₦30k',
+        debt: '₦90k',
         rep: 'None'
+    }
+  },
+  {
+    id: 'hustler',
+    name: 'The Hustler',
+    description: 'You owe a dangerous Loan Shark. He collects interest weekly. Miss a payment and it is over.',
+    profession: 'Gig Worker',
+    salary: 100000,
+    savings: 10000,
+    expenses: {
+      tax: 0,
+      rent: 30000,
+      food: 30000,
+      transport: 20000,
+      other: 5000,
+    },
+    liabilities: [
+        { id: 'l_shark_heavy', name: 'Loan Shark (Baba Ijebu)', type: 'Loan', totalOwed: 2500000, monthlyPayment: 100000 }
+    ],
+    difficulty: 'Impossible',
+    startingSocialCapital: 5,
+    iconName: 'running_with_errors',
+    previewStats: {
+        cash: '₦10k',
+        flow: '-₦85k',
+        debt: '₦2.5M',
+        rep: 'Risky'
     }
   }
 ];
