@@ -45,76 +45,76 @@ export const ARCHETYPES: Archetype[] = [
   {
     id: 'tech_bro',
     name: 'The Tech Bro',
-    description: 'Remote USD earner. High liquidity, zero liabilities. Living the dream.',
-    profession: 'Software Engineer',
-    salary: 1500000,
-    savings: 4500000,
+    description: 'Remote USD earner. Inflation is just a number to you.',
+    profession: 'Senior Backend Engineer',
+    salary: 2500000,
+    savings: 8000000,
     expenses: {
-      tax: 50000,
-      rent: 300000,
-      food: 150000,
-      transport: 50000,
-      other: 100000,
+      tax: 150000,
+      rent: 400000,
+      food: 200000,
+      transport: 100000,
+      other: 150000,
     },
     liabilities: [],
     difficulty: 'Very Easy',
-    startingSocialCapital: 50,
+    startingSocialCapital: 40,
     iconName: 'terminal',
     previewStats: {
-        cash: '₦4.5M',
-        flow: '₦850k',
+        cash: '₦8M',
+        flow: '₦1.5M',
         debt: '₦0',
-        rep: 'Medium'
+        rep: 'Low'
     }
   },
   {
     id: 'civil_servant',
     name: 'The Civil Servant',
-    description: 'Steady flow but heavy family tax. Predictable but capped growth.',
-    profession: 'Govt Administrator',
-    salary: 200000,
-    savings: 150000,
+    description: 'Job security is high, but the extended family demands are higher.',
+    profession: 'Level 12 Officer',
+    salary: 250000,
+    savings: 400000,
     expenses: {
-      tax: 20000,
-      rent: 50000,
-      food: 40000,
-      transport: 20000,
-      other: 10000,
+      tax: 25000,
+      rent: 60000,
+      food: 50000,
+      transport: 30000,
+      other: 60000, // Heavy Black Tax
     },
     liabilities: [
-      { id: 'l_car', name: 'Car Loan', type: 'Loan', totalOwed: 800000, monthlyPayment: 25000 }
+      { id: 'l_coop', name: 'Cooperative Loan', type: 'Loan', totalOwed: 500000, monthlyPayment: 20000 }
     ],
     difficulty: 'Normal',
-    startingSocialCapital: 80,
+    startingSocialCapital: 70,
     iconName: 'business_center',
     previewStats: {
-        cash: '₦150k',
-        flow: '₦60k',
-        debt: '₦800k',
+        cash: '₦400k',
+        flow: '₦5k',
+        debt: '₦500k',
         rep: 'High'
     }
   },
   {
     id: 'trader',
     name: 'The Market Trader',
-    description: 'High daily volume but extreme price shocks. Street smarts required.',
-    profession: 'Importer',
-    salary: 600000,
-    savings: 40000,
+    description: 'Cash rich but asset poor. You move millions but sleep with one eye open.',
+    profession: 'Electronics Importer',
+    salary: 800000,
+    savings: 2500000, // Working Capital
     expenses: {
-      tax: 10000,
-      rent: 150000,
+      tax: 20000, // Informal sector
+      rent: 200000, // Shop + House
       food: 100000,
-      transport: 50000,
+      transport: 100000,
       other: 100000,
     },
     liabilities: [],
     difficulty: 'Hard',
-    startingSocialCapital: 90,
+    startingSocialCapital: 85,
     iconName: 'storefront',
     previewStats: {
-        cash: '₦40k',
-        flow: 'Volatile',
+        cash: '₦2.5M',
+        flow: '₦280k',
         debt: '₦0',
         rep: 'Elite'
     }
@@ -122,27 +122,25 @@ export const ARCHETYPES: Archetype[] = [
   {
     id: 'corper',
     name: 'The Corper',
-    description: 'Serving the nation on a shoestring budget. Uncertainty is the only constant.',
+    description: 'Federal Allawee + PPA. It is not much, but it is honest work.',
     profession: 'NYSC Member',
-    salary: 33000,
-    savings: 33000,
+    salary: 55000, // 33k Allawee + 22k PPA
+    savings: 50000,
     expenses: {
       tax: 0,
-      rent: 0,
-      food: 20000,
-      transport: 5000,
+      rent: 0, // Usually provided or squatter
+      food: 30000,
+      transport: 15000,
       other: 5000,
     },
-    liabilities: [
-        { id: 'l_loan', name: 'Personal Loan', type: 'Loan', totalOwed: 150000, monthlyPayment: 5000 }
-    ],
+    liabilities: [],
     difficulty: 'Very Hard',
-    startingSocialCapital: 20,
+    startingSocialCapital: 30,
     iconName: 'military_tech',
     previewStats: {
-        cash: '₦33k',
-        flow: 'Low',
-        debt: '₦150k',
+        cash: '₦50k',
+        flow: '₦5k',
+        debt: '₦0',
         rep: 'Basic'
     }
   },
@@ -161,7 +159,6 @@ export const ARCHETYPES: Archetype[] = [
       other: 0,
     },
     liabilities: [
-        // Adjusted: 1.5M debt, but "Interest Only" payments to make survival theoretically possible
         { id: 'l_shark', name: 'Loan Shark (Interest Only)', type: 'Loan', totalOwed: 1500000, monthlyPayment: 60000 }
     ],
     difficulty: 'Extreme',
@@ -177,27 +174,27 @@ export const ARCHETYPES: Archetype[] = [
   {
     id: 'student',
     name: 'The Student',
-    description: 'ASUU strike looming, zero cash, and student loans piling up. Survival mode.',
+    description: 'Allowances are late. Fees are due. Welcome to the trenches.',
     profession: 'Undergraduate',
-    salary: 0,
-    savings: 0,
+    salary: 30000, // Allowance
+    savings: 10000,
     expenses: {
       tax: 0,
       rent: 0,
-      food: 10000,
-      transport: 5000,
+      food: 20000,
+      transport: 10000,
       other: 5000,
     },
     liabilities: [
-        { id: 'l_school', name: 'School Fees Debt', type: 'Loan', totalOwed: 400000, monthlyPayment: 0 }
+        { id: 'l_school', name: 'School Fees Arrears', type: 'Loan', totalOwed: 250000, monthlyPayment: 0 }
     ],
     difficulty: 'Impossible',
-    startingSocialCapital: 10,
+    startingSocialCapital: 15,
     iconName: 'school',
     previewStats: {
-        cash: '₦0',
-        flow: '₦0',
-        debt: '₦400k',
+        cash: '₦10k',
+        flow: '-₦5k',
+        debt: '₦250k',
         rep: 'None'
     }
   }

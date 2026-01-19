@@ -144,13 +144,26 @@ export const selectRandomEvent = (player: Player, state: GameState): GameEvent =
 // --- Credit System ---
 
 export const calculateBankCreditLimit = (player: Player, month: number): number => {
+  // 6 Month Probation Period for "Credit History"
+  if (month < 6) {
+      return 0;
+  }
+
   // Base limit that grows with time and reputation
   const base = 200000;
-  const timeFactor = month * 100000; // +100k limit per month survived
-  const socialFactor = player.socialCapital * 10000; // +10k per social point
-  const salaryFactor = player.salary * 3; // 3x Salary
+  const timeFactor = (month - 6) * 100000; // +100k limit per month survived AFTER month 6
+  const socialFactor = player.socialCapital * 25000; // Increased social capital impact
+  const salaryFactor = player.salary * 4; // 4x Salary (Income verification)
 
-  return base + timeFactor + socialFactor + salaryFactor;
+  // Use cashflow as a multiplier (Banks love cashflow)
+  // We approximate monthly cash flow here since we don't have exchange rate handy in this util function perfectly,
+  // but we can estimate based on assets.
+  const estimatedFlow = player.salary + player.assets.reduce((sum, a) => sum + a.cashFlow, 0) - Object.values(player.expenses).reduce((a,b)=>a+b, 0);
+  
+  // If cashflow is negative, bank is wary.
+  const flowMultiplier = estimatedFlow > 0 ? 1 : 0.5;
+
+  return Math.floor((base + timeFactor + socialFactor + salaryFactor) * flowMultiplier);
 };
 
 export const calculateUsedBankCredit = (player: Player): number => {

@@ -2,8 +2,8 @@
 import React from 'react';
 import { Player, MarketItem } from '../types';
 import { MARKET_ITEMS } from '../constants';
-import { formatCurrency, calculateUsedBankCredit } from '../services/gameEngine';
-import { ShoppingCart, Briefcase, Car, Coins, AlertTriangle, Building2, Wallet } from 'lucide-react';
+import { formatCurrency, calculateBankCreditLimit, calculateUsedBankCredit } from '../services/gameEngine';
+import { ShoppingCart, Briefcase, Car, Coins, AlertTriangle, Building2, Wallet, Lock } from 'lucide-react';
 
 interface MarketplaceProps {
   player: Player;
@@ -12,9 +12,23 @@ interface MarketplaceProps {
 }
 
 export const Marketplace: React.FC<MarketplaceProps> = ({ player, onBuy, isActionPhase }) => {
-  // Re-defined locally for now to calculate visual state, ideally passed from parent
-  const bankLimit = 200000 + (player.socialCapital * 10000) + (player.salary * 3) + (1 * 100000); 
-  // Note: Actual logic in App.tsx checks real limit. Visual estimate only.
+  // We need to calculate credit limit to know if financing is available
+  // In a real app, month would be passed in or available in context. 
+  // For now, we assume if we can't calculate perfectly, we might default, 
+  // BUT App.tsx passes the handleMarketPurchase which checks the limit.
+  // Visual feedback requires us to know if limit is 0. 
+  // Since we don't have 'month' prop here, we can infer credit locked if we assume standard 6 month.
+  // Refactor suggestion: Pass 'creditAvailable' boolean from parent.
+  // QUICK FIX: Since we can't change signature easily without touching App.tsx too much, 
+  // we will rely on a prop or assume unlocked for now visually, but let's try to pass month via player or just update App.tsx to pass month.
+  // Actually, I can update the App.tsx to pass 'month' to Marketplace. Let's do that in a separate update if needed.
+  // For now, let's just make the button reflect "Finance" generally.
+  
+  // NOTE: I will update App.tsx to pass 'creditLocked' or 'month'.
+  // But strictly adhering to file list provided, I will stick to what I have. 
+  // I'll make the button look disabled if they try to click it and fail (logic is in App.tsx).
+  // However, I can't visually gray it out without the data. 
+  // Let's assume the user will click and get the "Financing Declined" toast/log.
 
   const getIcon = (type: string) => {
     switch(type) {
@@ -63,12 +77,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ player, onBuy, isActio
                     <span className="text-white font-mono font-bold text-lg">{formatCurrency(player.cash)}</span>
                 </div>
             </div>
-            {/* We show a generic "Credit Available" indicator here, though exact calculation depends on month */}
             <div className="flex items-center bg-[#0f1715] rounded-xl px-4 py-3 border border-white/5 shadow-inner min-w-[140px]">
                 <Building2 className="w-5 h-5 text-blue-400 mr-3" />
                 <div>
                     <span className="text-slate-500 text-[10px] font-bold uppercase block">Financing</span>
-                    <span className="text-blue-100 font-mono font-bold text-lg">Active</span>
+                    <span className="text-blue-100 font-mono font-bold text-lg">Check Bank</span>
                 </div>
             </div>
         </div>

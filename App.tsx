@@ -123,8 +123,6 @@ const App: React.FC = () => {
     const nextMood = Math.min(100, player.mood + recoveryMood);
 
     // LOAN AMORTIZATION LOGIC
-    // Reduce remaining term on loans. Reduce totalOwed by monthly payment amount (simulating repayment).
-    // If term reaches 0, remove the liability.
     const updatedLiabilities = player.liabilities.reduce((acc: Liability[], liability) => {
         if (liability.type === 'Loan' && liability.termRemaining !== undefined) {
             const nextTerm = liability.termRemaining - 1;
@@ -135,8 +133,7 @@ const App: React.FC = () => {
                 return acc; // Don't add to accumulator (remove it)
             }
             
-            // Reduce total owed by monthly payment (Simple amortization for game mechanics)
-            // Ensure totalOwed doesn't drop below 0
+            // Reduce total owed by monthly payment
             const nextTotalOwed = Math.max(0, liability.totalOwed - liability.monthlyPayment);
             
             acc.push({
@@ -146,7 +143,6 @@ const App: React.FC = () => {
             });
             return acc;
         }
-        // Keep non-loans or loans without terms (though all new loans should have terms)
         acc.push(liability);
         return acc;
     }, []);
@@ -455,7 +451,6 @@ const App: React.FC = () => {
         addLog(`MARKET: Bought ${item.name} with CASH.`);
     } else {
         // Variable term based on tier
-        // Low: 6 months, Middle: 12 months, High: 24 months
         let term = 12;
         if (item.tier === 'Low') term = 6;
         if (item.tier === 'High') term = 24;
@@ -601,90 +596,94 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen flex bg-[#0f1715] font-inter text-slate-200">
+    <div className="h-[100dvh] flex bg-[#0f1715] font-inter text-slate-200 overflow-hidden">
       
-      {/* Victory Modal - Updated to be a Stat Card */}
+      {/* Victory Modal - Full Screen Mobile Responsive */}
       {gameState.phase === 'VICTORY' && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-in fade-in duration-700 overflow-y-auto">
-          <div className="bg-[#1a2321] rounded-3xl p-1 max-w-lg w-full text-center shadow-2xl border-4 border-emerald-500/50 relative my-auto">
-             
-             {/* Decorative Background */}
-             <div className="absolute inset-0 bg-pattern opacity-10"></div>
-             
-             <div className="bg-[#0f1715] rounded-[22px] p-6 relative z-10">
-                 <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30">
-                     <Award className="w-10 h-10 text-emerald-500" />
-                 </div>
-                 
-                 <h2 className="text-4xl font-black text-white mb-1 tracking-tight">GAME BEATEN</h2>
-                 <p className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-8">Financial Freedom Achieved</p>
+        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl animate-in fade-in duration-700 overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4">
+            <div className="bg-[#1a2321] rounded-3xl p-1 max-w-lg w-full text-center shadow-2xl border-4 border-emerald-500/50 relative">
+              
+              {/* Decorative Background */}
+              <div className="absolute inset-0 bg-pattern opacity-10"></div>
+              
+              <div className="bg-[#0f1715] rounded-[22px] p-6 relative z-10">
+                  <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30">
+                      <Award className="w-10 h-10 text-emerald-500" />
+                  </div>
+                  
+                  <h2 className="text-4xl font-black text-white mb-1 tracking-tight">GAME BEATEN</h2>
+                  <p className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-8">Financial Freedom Achieved</p>
 
-                 {/* New Stats Chart Component */}
-                 <div className="mb-8 text-left">
-                     <StatsChart history={gameState.netWorthHistory} currentNetWorth={calculateNetWorth(player)} />
-                 </div>
+                  {/* New Stats Chart Component */}
+                  <div className="mb-8 text-left">
+                      <StatsChart history={gameState.netWorthHistory} currentNetWorth={calculateNetWorth(player)} />
+                  </div>
 
-                 {/* The Stat Card Grid */}
-                 <div className="grid grid-cols-2 gap-4 text-left mb-8">
-                     <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
-                         <p className="text-[10px] text-slate-500 uppercase font-bold">Passive Income</p>
-                         <p className="text-xl font-mono font-bold text-emerald-400">{formatCurrency(calculatePassiveIncome(player.assets, gameState.exchangeRate))}</p>
-                     </div>
-                     <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
-                         <p className="text-[10px] text-slate-500 uppercase font-bold">Dream Achieved</p>
-                         <div className="flex items-center gap-1">
-                             <CheckCircle className="w-3 h-3 text-emerald-500" />
-                             <p className="text-sm font-bold text-white truncate">{player.dreamItem.name}</p>
-                         </div>
-                     </div>
-                     <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
-                         <p className="text-[10px] text-slate-500 uppercase font-bold">Time Taken</p>
-                         <p className="text-xl font-bold text-white">{gameState.month} Months</p>
-                     </div>
-                     <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
-                         <p className="text-[10px] text-slate-500 uppercase font-bold">Total Assets</p>
-                         <p className="text-xl font-bold text-white">{player.assets.length}</p>
-                     </div>
-                 </div>
+                  {/* The Stat Card Grid */}
+                  <div className="grid grid-cols-2 gap-4 text-left mb-8">
+                      <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Passive Income</p>
+                          <p className="text-lg md:text-xl font-mono font-bold text-emerald-400">{formatCurrency(calculatePassiveIncome(player.assets, gameState.exchangeRate))}</p>
+                      </div>
+                      <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Dream Achieved</p>
+                          <div className="flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-emerald-500" />
+                              <p className="text-sm font-bold text-white truncate">{player.dreamItem.name}</p>
+                          </div>
+                      </div>
+                      <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Time Taken</p>
+                          <p className="text-lg md:text-xl font-bold text-white">{gameState.month} Months</p>
+                      </div>
+                      <div className="bg-[#1a2321] p-4 rounded-xl border border-[#2d3a35]">
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Total Assets</p>
+                          <p className="text-lg md:text-xl font-bold text-white">{player.assets.length}</p>
+                      </div>
+                  </div>
 
-                 <button 
-                   onClick={() => setGameState({ phase: 'SETUP', month: 1, log: [], exchangeRate: INITIAL_EXCHANGE_RATE, flags: {}, netWorthHistory: [] })}
-                   className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider shadow-lg transition-all active:scale-95"
-                 >
-                   Start New Life
-                 </button>
-             </div>
+                  <button 
+                    onClick={() => setGameState({ phase: 'SETUP', month: 1, log: [], exchangeRate: INITIAL_EXCHANGE_RATE, flags: {}, netWorthHistory: [] })}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-black text-sm uppercase tracking-wider shadow-lg transition-all active:scale-95"
+                  >
+                    Start New Life
+                  </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Game Over Modal */}
       {gameState.phase === 'GAME_OVER' && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-lg p-4">
-          <div className="bg-[#1a0505] rounded-3xl p-10 max-w-lg text-center shadow-2xl border-2 border-red-900 animate-in zoom-in duration-500">
-             <Skull className="w-24 h-24 text-red-600 mx-auto mb-6 animate-pulse" />
-             <h2 className="text-5xl font-black text-red-500 mb-2 uppercase tracking-tighter">Wasted</h2>
-             <p className="text-xl text-red-200 mb-8 font-medium">
-               You succumbed to the pressure. 
-               <br/>
-               <span className="text-sm opacity-60 mt-2 block">Cause of Death: Stress & Sapa</span>
-             </p>
-             <div className="bg-black/40 p-4 rounded-xl border border-red-900/50 mb-8 grid grid-cols-2 gap-4 text-left">
-                <div>
-                   <span className="text-xs text-red-400 uppercase font-bold">Months Survived</span>
-                   <p className="text-2xl font-mono text-white">{gameState.month}</p>
-                </div>
-                <div>
-                   <span className="text-xs text-red-400 uppercase font-bold">Net Worth</span>
-                   <p className="text-2xl font-mono text-white">{formatCurrency(calculateNetWorth(player))}</p>
-                </div>
-             </div>
-             <button 
-               onClick={() => setGameState({ phase: 'SETUP', month: 1, log: [], exchangeRate: INITIAL_EXCHANGE_RATE, flags: {}, netWorthHistory: [] })}
-               className="w-full bg-red-800 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-red-700 transition shadow-[0_0_20px_rgba(220,38,38,0.4)] uppercase tracking-wider"
-             >
-               Try Again
-             </button>
+        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-lg overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center p-4">
+            <div className="bg-[#1a0505] rounded-3xl p-8 max-w-lg w-full text-center shadow-2xl border-2 border-red-900 animate-in zoom-in duration-500">
+              <Skull className="w-24 h-24 text-red-600 mx-auto mb-6 animate-pulse" />
+              <h2 className="text-5xl font-black text-red-500 mb-2 uppercase tracking-tighter">Wasted</h2>
+              <p className="text-xl text-red-200 mb-8 font-medium">
+                You succumbed to the pressure. 
+                <br/>
+                <span className="text-sm opacity-60 mt-2 block">Cause of Death: Stress & Sapa</span>
+              </p>
+              <div className="bg-black/40 p-4 rounded-xl border border-red-900/50 mb-8 grid grid-cols-2 gap-4 text-left">
+                  <div>
+                    <span className="text-xs text-red-400 uppercase font-bold">Months Survived</span>
+                    <p className="text-2xl font-mono text-white">{gameState.month}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-red-400 uppercase font-bold">Net Worth</span>
+                    <p className="text-2xl font-mono text-white">{formatCurrency(calculateNetWorth(player))}</p>
+                  </div>
+              </div>
+              <button 
+                onClick={() => setGameState({ phase: 'SETUP', month: 1, log: [], exchangeRate: INITIAL_EXCHANGE_RATE, flags: {}, netWorthHistory: [] })}
+                className="w-full bg-red-800 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-red-700 transition shadow-[0_0_20px_rgba(220,38,38,0.4)] uppercase tracking-wider"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -718,10 +717,10 @@ const App: React.FC = () => {
       </aside>
 
       {/* --- MAIN CONTENT --- */}
-      <div className="flex-1 flex flex-col md:pl-64 min-h-screen relative w-full">
+      <div className="flex-1 flex flex-col md:pl-64 h-full relative w-full overflow-hidden">
         
         {/* Desktop Header */}
-        <header className="hidden md:flex justify-between items-center py-5 px-8 border-b border-[#2d3a35] bg-[#0f1715]/80 backdrop-blur-md sticky top-0 z-40">
+        <header className="hidden md:flex justify-between items-center py-5 px-8 border-b border-[#2d3a35] bg-[#0f1715]/80 backdrop-blur-md sticky top-0 z-40 shrink-0">
            <h1 className="text-xl font-bold text-white">
                {activeTab === 'home' && 'Dashboard'}
                {activeTab === 'portfolio' && 'Portfolio & Debts'}
@@ -739,7 +738,7 @@ const App: React.FC = () => {
         </header>
 
         {/* Mobile Header */}
-        <header className="md:hidden flex justify-between items-center p-4 border-b border-[#2d3a35] bg-[#1a2321] sticky top-0 z-40">
+        <header className="md:hidden flex justify-between items-center p-4 border-b border-[#2d3a35] bg-[#1a2321] sticky top-0 z-40 shrink-0">
             <div className="flex items-center">
                 <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center mr-3">
                     <Wallet className="w-5 h-5 text-white" />
@@ -749,7 +748,7 @@ const App: React.FC = () => {
             <button className="text-slate-400"><Menu className="w-6 h-6" /></button>
         </header>
 
-        <main className="flex-grow w-full max-w-5xl mx-auto px-4 md:px-8 pt-6 pb-24 md:pb-12">
+        <main className="flex-grow w-full max-w-5xl mx-auto px-4 md:px-8 pt-6 pb-40 md:pb-12 overflow-y-auto">
           
           {activeTab === 'home' && (
              <Dashboard 

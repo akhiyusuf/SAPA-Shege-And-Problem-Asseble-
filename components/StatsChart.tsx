@@ -113,7 +113,7 @@ export const StatsChart: React.FC<StatsChartProps> = ({ history, currentNetWorth
         </div>
 
         {/* SVG CHART CONTAINER */}
-        <div className="w-full aspect-[2/1] md:aspect-[3/1] relative">
+        <div className="w-full aspect-[2.5/1] md:aspect-[3/1] relative">
             <svg 
                 viewBox={`0 0 ${width} ${height}`} 
                 className="w-full h-full overflow-visible" 

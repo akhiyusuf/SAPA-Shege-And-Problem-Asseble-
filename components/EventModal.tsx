@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { GameEvent, Player, EventChoice, EventResult } from '../types';
 import { formatCurrency } from '../services/gameEngine';
@@ -90,7 +91,6 @@ export const EventModal: React.FC<EventModalProps> = ({
   };
 
   // Determine if player is stuck (cannot afford ANY choice via CASH)
-  // Note: We now have Bank options, so "stuck" implies no cash AND no credit for mandatory costs
   const affordableChoices = event.choices.filter(c => {
       if (!c.cost) return true;
       const canPayCash = player.cash >= c.cost;
@@ -101,10 +101,10 @@ export const EventModal: React.FC<EventModalProps> = ({
   const isStuck = affordableChoices.length === 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200 overflow-y-auto">
       
       {/* Content Container */}
-      <div className="relative w-full max-w-lg bg-[#1a2321] border border-[#2d3a35] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-lg bg-[#1a2321] border border-[#2d3a35] rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto max-h-[95dvh]">
         
         {/* --- VIEW 1: EVENT CHOICES --- */}
         {!outcome && (
@@ -133,7 +133,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="p-5 overflow-y-auto flex-grow scrollbar-hide">
+                <div className="p-5 overflow-y-auto flex-grow custom-scrollbar">
                     <p className="text-slate-300 mb-6 text-center text-sm leading-relaxed">{event.description}</p>
 
                     <div className="space-y-3">
@@ -144,7 +144,6 @@ export const EventModal: React.FC<EventModalProps> = ({
                         
                         const hasReqAsset = choice.reqAssetType ? player.assets.some(a => a.type === choice.reqAssetType) : true;
                         
-                        // If no cost, only need asset req. If cost, need at least one payment method + asset req.
                         const isActionable = !choice.cost ? hasReqAsset : (canAffordCash || canAffordBank) && hasReqAsset;
                         
                         const isRisky = choice.successChance && choice.successChance < 1;
@@ -239,7 +238,7 @@ export const EventModal: React.FC<EventModalProps> = ({
 
                     {/* Emergency Section */}
                     {(isStuck || showEmergencyOptions) && (
-                        <div className="mt-6 space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="mt-6 space-y-3 animate-in fade-in slide-in-from-bottom-2 pb-2">
                              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Emergency Options</h4>
                              
                              {/* Shark Loan */}
@@ -285,7 +284,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                     {!isStuck && !showEmergencyOptions && (
                         <button 
                             onClick={() => setShowEmergencyOptions(true)}
-                            className="mt-6 w-full text-center text-[10px] text-slate-500 hover:text-white transition-colors uppercase font-bold tracking-widest"
+                            className="mt-6 mb-2 w-full text-center text-[10px] text-slate-500 hover:text-white transition-colors uppercase font-bold tracking-widest"
                         >
                             Open Emergency Menu
                         </button>

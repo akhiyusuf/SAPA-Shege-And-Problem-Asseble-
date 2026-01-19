@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Player } from '../types';
 import { formatCurrency, calculateBankCreditLimit, calculateUsedBankCredit, calculateSharkLimit } from '../services/gameEngine';
-import { Building2, AlertTriangle, Wallet, Lock, TrendingUp, Info } from 'lucide-react';
+import { Building2, AlertTriangle, Wallet, Lock, TrendingUp, Info, History } from 'lucide-react';
 
 interface BankProps {
   player: Player;
@@ -17,6 +17,10 @@ export const Bank: React.FC<BankProps> = ({ player, month, onTakeSharkLoan }) =>
   const usedCredit = calculateUsedBankCredit(player);
   const availableCredit = Math.max(0, bankLimit - usedCredit);
   
+  // Logic to determine if credit is locked due to time
+  const isCreditLocked = month < 6;
+  const monthsToUnlock = 6 - month;
+
   const sharkLimit = calculateSharkLimit(player);
   const maxSharkTake = Math.min(sharkLimit, 10000000); // Hard cap 10M
 
@@ -44,7 +48,7 @@ export const Bank: React.FC<BankProps> = ({ player, month, onTakeSharkLoan }) =>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* SAFE OPTION: BANK FINANCING */}
-        <div className="bg-[#1a2321] rounded-3xl overflow-hidden border border-emerald-900/30 flex flex-col h-full">
+        <div className="bg-[#1a2321] rounded-3xl overflow-hidden border border-emerald-900/30 flex flex-col h-full relative">
             <div className="bg-emerald-900/20 p-6 border-b border-emerald-900/30">
                 <div className="flex items-center space-x-3 mb-2">
                     <div className="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
@@ -57,51 +61,69 @@ export const Bank: React.FC<BankProps> = ({ player, month, onTakeSharkLoan }) =>
                 </div>
             </div>
 
-            <div className="p-6 flex-grow flex flex-col justify-between">
-                <div className="space-y-6">
-                    <div className="bg-[#0f1715] rounded-xl p-4 border border-[#2d3a35]">
-                        <p className="text-slate-400 text-xs font-bold uppercase mb-1">Asset Financing Limit</p>
-                        <div className="flex items-end gap-2">
-                            <span className="text-3xl font-mono font-bold text-white">{formatCurrency(availableCredit)}</span>
-                            <span className="text-slate-500 text-sm mb-1">available</span>
+            {isCreditLocked ? (
+                <div className="p-8 flex flex-col items-center justify-center flex-grow text-center space-y-6">
+                    <div className="w-20 h-20 bg-[#0f1715] rounded-full flex items-center justify-center border-2 border-[#2d3a35] shadow-inner">
+                        <Lock className="w-8 h-8 text-slate-500" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-white mb-2">Credit History Insufficient</h3>
+                        <p className="text-slate-400 text-xs max-w-xs mx-auto leading-relaxed">
+                            The bank requires a stable income history before approving loans. Keep your account active and clean.
+                        </p>
+                    </div>
+                    <div className="bg-[#0f1715] px-6 py-3 rounded-xl border border-[#2d3a35] flex items-center gap-3">
+                        <History className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs font-bold text-emerald-400">Unlock in {monthsToUnlock} Months</span>
+                    </div>
+                </div>
+            ) : (
+                <div className="p-6 flex-grow flex flex-col justify-between">
+                    <div className="space-y-6">
+                        <div className="bg-[#0f1715] rounded-xl p-4 border border-[#2d3a35]">
+                            <p className="text-slate-400 text-xs font-bold uppercase mb-1">Asset Financing Limit</p>
+                            <div className="flex items-end gap-2">
+                                <span className="text-3xl font-mono font-bold text-white">{formatCurrency(availableCredit)}</span>
+                                <span className="text-slate-500 text-sm mb-1">available</span>
+                            </div>
+                            <div className="w-full bg-[#2d3a35] h-1.5 rounded-full mt-3 overflow-hidden">
+                                <div 
+                                    className="bg-emerald-500 h-full rounded-full" 
+                                    style={{ width: bankLimit > 0 ? `${(usedCredit / bankLimit) * 100}%` : '0%' }}
+                                ></div>
+                            </div>
+                            <div className="flex justify-between mt-2 text-[10px] text-slate-500 font-medium">
+                                <span>Used: {formatCurrency(usedCredit)}</span>
+                                <span>Total Limit: {formatCurrency(bankLimit)}</span>
+                            </div>
                         </div>
-                        <div className="w-full bg-[#2d3a35] h-1.5 rounded-full mt-3 overflow-hidden">
-                            <div 
-                                className="bg-emerald-500 h-full rounded-full" 
-                                style={{ width: `${(usedCredit / bankLimit) * 100}%` }}
-                            ></div>
-                        </div>
-                        <div className="flex justify-between mt-2 text-[10px] text-slate-500 font-medium">
-                            <span>Used: {formatCurrency(usedCredit)}</span>
-                            <span>Total Limit: {formatCurrency(bankLimit)}</span>
+
+                        <div className="space-y-3">
+                            <div className="flex items-start gap-3">
+                                <TrendingUp className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-bold text-slate-200">0% Interest Financing</p>
+                                    <p className="text-xs text-slate-500">We buy the asset, you pay us back monthly. No interest charged.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <Lock className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-bold text-slate-200">Asset Backed</p>
+                                    <p className="text-xs text-slate-500">Only available for purchasing assets in the Market.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                            <TrendingUp className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                            <div>
-                                <p className="text-sm font-bold text-slate-200">0% Interest Financing</p>
-                                <p className="text-xs text-slate-500">We buy the asset, you pay us back monthly. No interest charged.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <Lock className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                            <div>
-                                <p className="text-sm font-bold text-slate-200">Asset Backed</p>
-                                <p className="text-xs text-slate-500">Only available for purchasing assets in the Market.</p>
-                            </div>
-                        </div>
+                    <div className="mt-8 bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/10 flex items-center gap-3">
+                        <Info className="w-5 h-5 text-emerald-400 shrink-0" />
+                        <p className="text-xs text-emerald-100">
+                            To use this credit, go to the <strong>Market</strong> tab and select "Finance with Bank" when buying an asset.
+                        </p>
                     </div>
                 </div>
-
-                <div className="mt-8 bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/10 flex items-center gap-3">
-                    <Info className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <p className="text-xs text-emerald-100">
-                        To use this credit, go to the <strong>Market</strong> tab and select "Finance with Bank" when buying an asset.
-                    </p>
-                </div>
-            </div>
+            )}
         </div>
 
         {/* RISKY OPTION: LOAN SHARK */}
