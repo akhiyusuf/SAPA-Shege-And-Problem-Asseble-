@@ -12,6 +12,13 @@ interface FinancialStatementProps {
   gameLog: string[];
 }
 
+interface AssetGroup {
+  asset: Asset;
+  count: number;
+  totalFlow: number;
+  instances: Asset[];
+}
+
 export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, onRepayLiability, onSellAsset, isActionPhase, gameLog }) => {
   const netWorth = calculateNetWorth(player);
 
@@ -24,6 +31,23 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
         default: return <Coins className="w-5 h-5" />;
     }
   };
+
+  // Group assets by name/type
+  const groupedAssets = player.assets.reduce((acc, asset) => {
+      const key = `${asset.name}-${asset.type}`;
+      if (!acc[key]) {
+          acc[key] = {
+              asset: asset, // Store one instance for display info
+              count: 0,
+              totalFlow: 0,
+              instances: []
+          };
+      }
+      acc[key].count += 1;
+      acc[key].totalFlow += asset.cashFlow;
+      acc[key].instances.push(asset);
+      return acc;
+  }, {} as Record<string, AssetGroup>);
 
   return (
     <div className="pb-24 md:pb-10">
@@ -72,23 +96,31 @@ export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, 
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {player.assets.map((asset, idx) => (
-                        <div key={`asset-${idx}`} className="bg-[#1a2321] p-4 rounded-2xl border border-[#2d3a35] flex items-center justify-between hover:border-emerald-500/30 transition-colors">
+                    {Object.values(groupedAssets).map((group: AssetGroup, idx) => (
+                        <div key={`group-${idx}`} className="bg-[#1a2321] p-4 rounded-2xl border border-[#2d3a35] flex items-center justify-between hover:border-emerald-500/30 transition-colors">
                             <div className="flex items-center">
-                                <div className="w-12 h-12 rounded-xl bg-[#232d2a] flex items-center justify-center text-emerald-500 mr-4 border border-white/5">
-                                    {getAssetIcon(asset.type)}
+                                <div className="w-12 h-12 rounded-xl bg-[#232d2a] flex items-center justify-center text-emerald-500 mr-4 border border-white/5 relative">
+                                    {getAssetIcon(group.asset.type)}
+                                    {group.count > 1 && (
+                                        <div className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#1a2321]">
+                                            {group.count}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white text-sm">{asset.name}</h4>
-                                    <p className="text-emerald-500 text-xs font-mono font-bold">+{formatCurrency(asset.cashFlow, asset.currency)}/mo</p>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="font-bold text-white text-sm">{group.asset.name}</h4>
+                                        {group.count > 1 && <span className="text-[10px] text-slate-500 font-bold">x{group.count}</span>}
+                                    </div>
+                                    <p className="text-emerald-500 text-xs font-mono font-bold">+{formatCurrency(group.totalFlow, group.asset.currency)}/mo</p>
                                 </div>
                             </div>
                             <button 
-                                onClick={() => onSellAsset(asset)}
+                                onClick={() => onSellAsset(group.instances[0])} // Sell one instance
                                 disabled={!isActionPhase}
                                 className="text-xs bg-[#232d2a] hover:bg-red-900/20 hover:text-red-400 text-slate-400 px-3 py-1.5 rounded-lg border border-[#2d3a35] transition-colors"
                             >
-                                Sell
+                                Sell 1
                             </button>
                         </div>
                     ))}

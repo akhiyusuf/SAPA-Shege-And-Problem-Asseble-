@@ -206,13 +206,13 @@ export const ARCHETYPES: Archetype[] = [
 // --- MARKET OPPORTUNITIES ---
 
 export const MARKET_ITEMS: MarketItem[] = [
-  // --- LOW CLASS ---
+  // --- LOW CLASS (ROI approx 15-20%) ---
   {
     id: 'mkt_pos',
     name: 'POS Business',
     description: 'Setup a Point of Sale stand at a busy junction. High volume.',
     cost: 80000,
-    cashFlow: 12000,
+    cashFlow: 12000, // 15% ROI
     type: 'Business',
     tier: 'Low',
     risk: 0.15,
@@ -224,7 +224,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     name: 'Okrika Bale',
     description: 'Import and sell thrift clothes. Very high margins.',
     cost: 150000,
-    cashFlow: 25000,
+    cashFlow: 25000, // 16.6% ROI
     type: 'Business',
     tier: 'Low',
     risk: 0.25,
@@ -236,7 +236,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     name: 'Perfume Oils',
     description: 'Resell oil perfumes. Low barrier to entry.',
     cost: 20000,
-    cashFlow: 4000, 
+    cashFlow: 4000, // 20% ROI
     type: 'Side Hustle',
     tier: 'Low',
     risk: 0.05,
@@ -244,13 +244,13 @@ export const MARKET_ITEMS: MarketItem[] = [
     onFailureMessage: 'The delivery guy smashed the package. Oils everywhere.'
   },
 
-  // --- MIDDLE CLASS ---
+  // --- MIDDLE CLASS (ROI Buffed to 15-20% to match Low Class but with scale) ---
   {
     id: 'mkt_pharmacy',
     name: 'Community Pharmacy',
     description: 'Open a registered pharmacy store in a residential area.',
     cost: 3500000,
-    cashFlow: 250000,
+    cashFlow: 600000, // ~17% ROI (Was 250k/7%)
     type: 'Business',
     tier: 'Middle',
     risk: 0.1,
@@ -262,7 +262,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     name: 'Uber Car Fleet',
     description: 'Buy a used Corolla for e-hailing. Weekly remittance.',
     cost: 4500000,
-    cashFlow: 180000,
+    cashFlow: 800000, // ~17.7% ROI (Was 180k/4%)
     type: 'Business',
     tier: 'Middle',
     risk: 0.3,
@@ -274,7 +274,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     name: 'Logistics Bikes (3x)',
     description: 'Fleet of 3 delivery bikes servicing e-commerce vendors.',
     cost: 1800000,
-    cashFlow: 120000,
+    cashFlow: 270000, // 15% ROI (Was 120k/6.6%)
     type: 'Business',
     tier: 'Middle',
     risk: 0.2,
@@ -282,13 +282,13 @@ export const MARKET_ITEMS: MarketItem[] = [
     onFailureMessage: 'LG officials seized the bikes for "sticker violation".'
   },
 
-  // --- HIGH CLASS ---
+  // --- HIGH CLASS (ROI Buffed to 18-25% to make wealth acceleration possible) ---
   {
     id: 'mkt_gas',
     name: 'Cooking Gas Plant',
     description: 'Medium sized LPG refill station. Essential commodity.',
     cost: 25000000,
-    cashFlow: 1800000,
+    cashFlow: 5000000, // 20% ROI (Was 1.8M/7.2%)
     type: 'Business',
     tier: 'High',
     risk: 0.15,
@@ -300,7 +300,7 @@ export const MARKET_ITEMS: MarketItem[] = [
     name: 'Rental Apartment Block',
     description: 'Block of 4 flats in a developing area. Steady yearly rent.',
     cost: 65000000,
-    cashFlow: 3500000, // Monthly avg
+    cashFlow: 9000000, // ~13.8% ROI (Was 3.5M/5.3%) - Lower ROI but asset appreciates mentally
     type: 'Real Estate',
     tier: 'High',
     risk: 0.05,
