@@ -1,0 +1,184 @@
+
+import React from 'react';
+import { Player, Asset, Liability } from '../types';
+import { formatCurrency, calculateNetWorth } from '../services/gameEngine';
+import { Briefcase, Building, Coins, Car, CheckCircle, PiggyBank, ArrowRight } from 'lucide-react';
+
+interface FinancialStatementProps {
+  player: Player;
+  onRepayLiability: (liability: Liability) => void;
+  onSellAsset: (asset: Asset) => void;
+  isActionPhase: boolean;
+  gameLog: string[];
+}
+
+export const FinancialStatement: React.FC<FinancialStatementProps> = ({ player, onRepayLiability, onSellAsset, isActionPhase, gameLog }) => {
+  const netWorth = calculateNetWorth(player);
+
+  const getAssetIcon = (type: Asset['type']) => {
+    switch (type) {
+        case 'Real Estate': return <Building className="w-5 h-5" />;
+        case 'Business': return <Briefcase className="w-5 h-5" />;
+        case 'Side Hustle': return <Car className="w-5 h-5" />;
+        case 'Paper Asset': return <Coins className="w-5 h-5" />;
+        default: return <Coins className="w-5 h-5" />;
+    }
+  };
+
+  return (
+    <div className="pb-24 md:pb-10">
+      
+      {/* Net Worth Header */}
+      <div className="bg-[#1a2321] rounded-3xl p-8 border border-[#2d3a35] shadow-lg mb-8">
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Total Net Worth</p>
+        <div className="flex items-end gap-4 mb-4">
+            <h1 className="text-5xl font-black text-white tracking-tight">
+                {formatCurrency(netWorth)}
+            </h1>
+            <span className="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2 py-1 rounded-full border border-emerald-500/20 mb-2">
+                +2.4%
+            </span>
+        </div>
+        <div className="h-px w-full bg-[#2d3a35] mb-4"></div>
+        <div className="flex gap-8">
+            <div>
+                <span className="text-slate-500 text-xs font-bold uppercase block">Cash</span>
+                <span className="text-white font-mono font-bold">{formatCurrency(player.cash)}</span>
+            </div>
+            <div>
+                <span className="text-slate-500 text-xs font-bold uppercase block">Assets</span>
+                <span className="text-white font-mono font-bold">{formatCurrency(player.assets.reduce((a,b)=>a+b.cost, 0))}</span>
+            </div>
+            <div>
+                <span className="text-slate-500 text-xs font-bold uppercase block">Debts</span>
+                <span className="text-red-400 font-mono font-bold">{formatCurrency(player.liabilities.reduce((a,b)=>a+b.totalOwed, 0))}</span>
+            </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Left Col: Assets */}
+        <div>
+            <div className="flex justify-between items-center mb-4 px-1">
+                <h2 className="text-xl font-bold text-white">Your Assets</h2>
+                <button className="text-xs font-bold text-[#eab308] uppercase tracking-wider hover:text-yellow-300 transition-colors">Go to Market</button>
+            </div>
+
+            {player.assets.length === 0 ? (
+                <div className="bg-[#1a2321] rounded-2xl p-8 border border-dashed border-[#2d3a35] text-center hover:bg-[#1f2927] transition-colors cursor-pointer group">
+                    <div className="w-16 h-16 bg-[#232d2a] rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2d3a35]">
+                        <PiggyBank className="w-8 h-8 text-slate-500 group-hover:text-emerald-500 transition-colors" />
+                    </div>
+                    <h3 className="text-slate-300 font-bold mb-2">Portfolio is Empty</h3>
+                    <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">Assets put money in your pocket. Start investing to build your wealth column.</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {player.assets.map((asset, idx) => (
+                        <div key={`asset-${idx}`} className="bg-[#1a2321] p-4 rounded-2xl border border-[#2d3a35] flex items-center justify-between hover:border-emerald-500/30 transition-colors">
+                            <div className="flex items-center">
+                                <div className="w-12 h-12 rounded-xl bg-[#232d2a] flex items-center justify-center text-emerald-500 mr-4 border border-white/5">
+                                    {getAssetIcon(asset.type)}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white text-sm">{asset.name}</h4>
+                                    <p className="text-emerald-500 text-xs font-mono font-bold">+{formatCurrency(asset.cashFlow, asset.currency)}/mo</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => onSellAsset(asset)}
+                                disabled={!isActionPhase}
+                                className="text-xs bg-[#232d2a] hover:bg-red-900/20 hover:text-red-400 text-slate-400 px-3 py-1.5 rounded-lg border border-[#2d3a35] transition-colors"
+                            >
+                                Sell
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+
+        {/* Right Col: Liabilities */}
+        <div>
+            <h2 className="text-xl font-bold text-white mb-4 px-1">Outstanding Debts</h2>
+            
+            <div className="space-y-3">
+                {player.liabilities.map((liab, idx) => {
+                    const canAfford = player.cash >= liab.totalOwed;
+                    const progress = Math.min(100, Math.max(10, Math.random() * 40)); 
+                    
+                    return (
+                        <div key={`liab-${idx}`} className="bg-[#1a2321] p-5 rounded-2xl border border-[#2d3a35]">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center">
+                                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mr-4">
+                                        <Car className="w-5 h-5" /> 
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-white text-sm">{liab.name}</h4>
+                                        <p className="text-slate-500 text-xs">12% APR • -{formatCurrency(liab.monthlyPayment)}/mo</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Remaining</span>
+                                    <p className="text-white font-bold font-mono">{formatCurrency(liab.totalOwed)}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#2d3a35]">
+                                <span className="text-xs text-slate-500">Payoff Amount</span>
+                                <button
+                                    onClick={() => onRepayLiability(liab)}
+                                    disabled={!canAfford || !isActionPhase}
+                                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center transition-all ${
+                                        canAfford 
+                                        ? 'bg-[#15803d] text-white hover:bg-emerald-600' 
+                                        : 'bg-[#232d2a] text-slate-500 cursor-not-allowed'
+                                    }`}
+                                >
+                                    Pay {formatCurrency(liab.totalOwed)}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+                {player.liabilities.length === 0 && (
+                    <div className="bg-[#1a2321] p-6 rounded-2xl border border-[#2d3a35] flex flex-col items-center justify-center text-emerald-500 h-40">
+                        <CheckCircle className="w-10 h-10 mb-2" />
+                        <span className="font-bold text-lg">Debt Free!</span>
+                        <span className="text-xs text-slate-500">You have no outstanding liabilities.</span>
+                    </div>
+                )}
+            </div>
+        </div>
+
+      </div>
+
+      {/* History Section */}
+      <div className="mt-8">
+         <h2 className="text-xl font-bold text-white mb-4 px-1">Activity Log</h2>
+         <div className="bg-[#1a2321] rounded-3xl p-6 border border-[#2d3a35]">
+            <div className="space-y-6 relative">
+                <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-[#2d3a35]"></div>
+
+                {gameLog.slice(0, 5).map((log, i) => (
+                    <div key={i} className="relative pl-6">
+                        <div className={`absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-[#1a2321] ${i===0 ? 'bg-emerald-500' : 'bg-[#52525b]'}`}></div>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase mb-0.5">
+                            {i === 0 ? 'TODAY' : i === 1 ? 'YESTERDAY' : `PREVIOUS`}
+                        </p>
+                        <p className="text-slate-200 text-sm font-medium leading-snug">{log}</p>
+                    </div>
+                ))}
+            </div>
+            
+            <div className="mt-6 pt-4 border-t border-[#2d3a35] text-center">
+                <button className="text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-white transition-colors">View Full History</button>
+            </div>
+         </div>
+      </div>
+
+    </div>
+  );
+};
