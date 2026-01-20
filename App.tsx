@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { GameState, Player, Archetype, GameEvent, EventResult, Liability, Asset, MarketItem, DreamItem, LifestyleTier } from './types';
+import { GameState, Player, Archetype, GameEvent, EventResult, Liability, Asset, MarketItem, DreamItem, LifestyleTier, Skill, Gig } from './types';
 import { INITIAL_EXCHANGE_RATE, VICTORY_MULTIPLIER, ARCHETYPES } from './constants';
 import { ArchetypeSelection } from './components/ArchetypeSelection';
 import { Dashboard } from './components/Dashboard';
@@ -57,7 +57,9 @@ const App: React.FC = () => {
       children: 0,
       lifestyle: 'Low',
       dreamItem: dream,
-      hasPurchasedDream: false
+      hasPurchasedDream: false,
+      skills: [],
+      gigsPerformedThisMonth: 0
     };
     
     // Initial Net Worth for history
@@ -152,13 +154,14 @@ const App: React.FC = () => {
     addLog(recoveryLog);
     if (rateMsg) addLog(rateMsg);
 
-    // Update Player
+    // Update Player - RESET GIGS COUNTER
     const updatedPlayer = {
       ...player,
       cash: nextCash,
       health: nextHealth,
       mood: nextMood,
-      liabilities: updatedLiabilities
+      liabilities: updatedLiabilities,
+      gigsPerformedThisMonth: 0 
     };
 
     setPlayer(updatedPlayer);
@@ -187,14 +190,17 @@ const App: React.FC = () => {
     setCurrentEvent(randomEvent);
   };
 
-  const handlePerformGig = () => {
+  const handlePerformGig = (gig: Gig) => {
     if(!player) return;
     
-    const costHealth = 5;
-    const costMood = 5;
-    const earnAmount = 5000;
+    // Threshold Logic: First 5 gigs are free of health/mood cost
+    const isFree = player.gigsPerformedThisMonth < 5;
+    
+    const costHealth = isFree ? 0 : gig.energyCost;
+    const costMood = isFree ? 0 : gig.moodCost;
+    const earnAmount = gig.pay;
 
-    if (player.health <= 10) {
+    if (!isFree && player.health <= costHealth) {
       addLog("Too exhausted to work! Rest needed.");
       return;
     }
@@ -203,10 +209,65 @@ const App: React.FC = () => {
       ...player,
       cash: player.cash + earnAmount,
       health: Math.max(0, player.health - costHealth),
-      mood: Math.max(0, player.mood - costMood)
+      mood: Math.max(0, player.mood - costMood),
+      gigsPerformedThisMonth: player.gigsPerformedThisMonth + 1
     });
 
-    addLog(`GIG: Hustled for cash. Earned ${formatCurrency(earnAmount)} but lost energy.`);
+    const costMsg = isFree ? "(Free Energy)" : `(-${costHealth} HP)`;
+    addLog(`GIG: Did ${gig.name}. Earned ${formatCurrency(earnAmount)} ${costMsg}.`);
+  };
+
+  const handleLearnSkill = (skill: Skill) => {
+    if(!player) return;
+    
+    // Check Requirement (Laptop)
+    if (skill.reqAssetId) {
+        const hasAsset = player.assets.some(a => a.marketId === skill.reqAssetId || a.id.startsWith(skill.reqAssetId + '_'));
+        if (!hasAsset) {
+            addLog(`Failed: You need a specific item (e.g. Laptop) to learn ${skill.name}.`);
+            return;
+        }
+    }
+
+    if(player.cash < skill.cost) {
+      addLog(`Cannot afford ${skill.name}.`);
+      return;
+    }
+    
+    setPlayer({
+      ...player,
+      cash: player.cash - skill.cost,
+      skills: [...player.skills, skill.id]
+    });
+    addLog(`SKILL: Learned ${skill.name}. New gigs unlocked!`);
+  };
+
+  const handleUpgradeAsset = (asset: Asset) => {
+    if (!player) return;
+    
+    if (asset.level >= asset.maxLevel) return;
+    if (player.cash < asset.upgradeCost) {
+      addLog("Insufficient funds to upgrade.");
+      return;
+    }
+
+    const updatedAssets = player.assets.map(a => {
+      if (a.id === asset.id) {
+        return {
+          ...a,
+          level: a.level + 1,
+          cashFlow: a.cashFlow + asset.upgradeFlowIncrease
+        };
+      }
+      return a;
+    });
+
+    setPlayer({
+      ...player,
+      cash: player.cash - asset.upgradeCost,
+      assets: updatedAssets
+    });
+    addLog(`UPGRADE: ${asset.name} upgraded to Level ${asset.level + 1}. Cashflow increased!`);
   };
 
   const handleLifestyleChange = (tier: LifestyleTier) => {
@@ -450,10 +511,11 @@ const App: React.FC = () => {
         updatedPlayer.cash -= item.cost;
         addLog(`MARKET: Bought ${item.name} with CASH.`);
     } else {
-        // Variable term based on tier
+        // Updated Logic: Longer loan terms for Business/Real Estate to ensure Cashflow Positive
         let term = 12;
-        if (item.tier === 'Low') term = 6;
-        if (item.tier === 'High') term = 24;
+        if (item.tier === 'Low') term = 12;
+        if (item.tier === 'Middle') term = 24; // 2 years
+        if (item.tier === 'High') term = 60; // 5 years
 
         const newLiability: Liability = {
             id: `bank_loan_${Date.now()}`,
@@ -470,12 +532,17 @@ const App: React.FC = () => {
     if (isSuccess) {
        const newAsset: Asset = {
          id: `${item.id}_${Date.now()}`,
+         marketId: item.id, // Link to market item for upgrades
          name: item.name,
          type: item.type,
          cost: item.cost,
          cashFlow: item.cashFlow,
          currency: 'NGN',
-         description: item.description
+         description: item.description,
+         level: 1,
+         maxLevel: item.maxLevel,
+         upgradeCost: item.upgradeCost,
+         upgradeFlowIncrease: item.upgradeFlowIncrease
        };
        updatedPlayer.assets = [...updatedPlayer.assets, newAsset];
     } else {
@@ -757,6 +824,7 @@ const App: React.FC = () => {
                 exchangeRate={gameState.exchangeRate} 
                 onNextMonth={handleNextMonth}
                 onPerformGig={handlePerformGig}
+                onLearnSkill={handleLearnSkill}
                 onLifestyleChange={handleLifestyleChange}
                 onBuyDream={handleBuyDream}
                 isActionPhase={gameState.phase === 'PLAYING'}
@@ -777,6 +845,7 @@ const App: React.FC = () => {
             <Marketplace 
               player={player}
               onBuy={handleMarketPurchase}
+              onUpgrade={handleUpgradeAsset}
               isActionPhase={gameState.phase === 'PLAYING'}
             />
           )}

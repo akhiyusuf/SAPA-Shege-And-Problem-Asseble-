@@ -1,5 +1,5 @@
 
-import { Archetype, GameEvent, MarketItem, DreamItem, LifestyleTier } from './types';
+import { Archetype, GameEvent, MarketItem, DreamItem, LifestyleTier, Skill, Gig } from './types';
 
 export const VICTORY_MULTIPLIER = 1.0; // Passive Income must be > Total Expenses
 export const INITIAL_EXCHANGE_RATE = 1500;
@@ -38,6 +38,112 @@ export const DREAM_ITEMS: DreamItem[] = [
     description: 'Give back to the community by building a free school.',
     cost: 40000000,
     iconName: 'school'
+  }
+];
+
+export const SKILLS: Skill[] = [
+  {
+    id: 'skill_driving',
+    name: 'Professional Driving',
+    cost: 30000,
+    description: 'Learn to navigate traffic and handle e-hailing apps.',
+    iconName: 'directions_car'
+  },
+  {
+    id: 'skill_baking',
+    name: 'Baking & Pastries',
+    cost: 50000,
+    description: 'Learn to make small chops and cakes.',
+    iconName: 'cake'
+  },
+  {
+    id: 'skill_digital',
+    name: 'Digital Marketing',
+    cost: 0,
+    description: 'Learn SEO, Ads, and Social Media (Requires Laptop).',
+    iconName: 'campaign',
+    reqAssetId: 'mkt_laptop'
+  },
+  {
+    id: 'skill_coding',
+    name: 'Software Development',
+    cost: 0,
+    description: 'Learn Fullstack development (Requires Laptop).',
+    iconName: 'terminal',
+    reqAssetId: 'mkt_laptop'
+  },
+  {
+    id: 'skill_forex',
+    name: 'Forex Trading',
+    cost: 0,
+    description: 'Learn to read charts and manage risk (Requires Laptop).',
+    iconName: 'candlestick_chart',
+    reqAssetId: 'mkt_laptop'
+  }
+];
+
+export const GIGS: Gig[] = [
+  {
+    id: 'gig_labor',
+    name: 'Manual Labor',
+    description: 'Construction site work. Hard on the body.',
+    pay: 5000,
+    energyCost: 15,
+    moodCost: 15
+  },
+  {
+    id: 'gig_uber',
+    name: 'Uber Driving',
+    description: 'Drive passengers around the city.',
+    pay: 15000,
+    energyCost: 10,
+    moodCost: 5,
+    reqSkillId: 'skill_driving'
+  },
+  {
+    id: 'gig_baking',
+    name: 'Small Chops Order',
+    description: 'Cater for a small birthday party.',
+    pay: 20000,
+    energyCost: 12,
+    moodCost: 5,
+    reqSkillId: 'skill_baking'
+  },
+  {
+    id: 'gig_marketing',
+    name: 'Run Ads Campaign',
+    description: 'Manage instagram ads for a vendor.',
+    pay: 30000,
+    energyCost: 8,
+    moodCost: 5,
+    reqSkillId: 'skill_digital'
+  },
+  {
+    id: 'gig_freelance',
+    name: 'Build Landing Page',
+    description: 'Build a website for a client.',
+    pay: 65000,
+    energyCost: 10,
+    moodCost: 5,
+    reqSkillId: 'skill_coding'
+  },
+  {
+    id: 'gig_consult',
+    name: 'Tech Consultation',
+    description: 'Advise a startup on architecture.',
+    pay: 100000,
+    energyCost: 5,
+    moodCost: 2,
+    reqSkillId: 'skill_coding'
+  },
+  {
+    id: 'gig_trade',
+    name: 'Scalp Trade Session',
+    description: 'High stress trading session.',
+    pay: 45000,
+    energyCost: 5,
+    moodCost: 20,
+    reqSkillId: 'skill_forex'
   }
 ];
 
@@ -208,106 +314,147 @@ export const ARCHETYPES: Archetype[] = [
 // --- MARKET OPPORTUNITIES ---
 
 export const MARKET_ITEMS: MarketItem[] = [
-  // --- LOW CLASS (ROI approx 15-20%) ---
+  // --- EQUIPMENT / ESSENTIALS ---
+  {
+    id: 'mkt_laptop',
+    name: 'Used MacBook',
+    description: 'Essential tool for learning high-income digital skills.',
+    cost: 350000,
+    cashFlow: 0, 
+    type: 'Equipment',
+    tier: 'Low',
+    risk: 0.05,
+    riskDescription: '5% chance battery is dead.',
+    onFailureMessage: 'The laptop battery died after 1 week. Costs money to fix.',
+    maxLevel: 1,
+    upgradeCost: 0,
+    upgradeFlowIncrease: 0
+  },
+
+  // --- LOW CLASS ---
   {
     id: 'mkt_pos',
     name: 'POS Business',
     description: 'Setup a Point of Sale stand at a busy junction. High volume.',
     cost: 80000,
-    cashFlow: 12000, // 15% ROI
+    cashFlow: 12000, 
     type: 'Business',
     tier: 'Low',
     risk: 0.15,
     riskDescription: '15% chance the agent runs away with your startup capital.',
-    onFailureMessage: 'The "Agent" you hired disappeared with the machine and your cash on day one.'
+    onFailureMessage: 'The "Agent" you hired disappeared with the machine and your cash on day one.',
+    maxLevel: 5,
+    upgradeCost: 50000,
+    upgradeFlowIncrease: 8000
   },
   {
     id: 'mkt_okrika',
     name: 'Okrika Bale',
     description: 'Import and sell thrift clothes. Very high margins.',
     cost: 150000,
-    cashFlow: 25000, // 16.6% ROI
+    cashFlow: 25000,
     type: 'Business',
     tier: 'Low',
     risk: 0.25,
     riskDescription: '25% chance of buying a "bad bale" (rags).',
-    onFailureMessage: 'You opened the bale and it was full of rags. Complete loss.'
+    onFailureMessage: 'You opened the bale and it was full of rags. Complete loss.',
+    maxLevel: 3,
+    upgradeCost: 120000,
+    upgradeFlowIncrease: 25000
   },
   {
     id: 'mkt_perfume',
     name: 'Perfume Oils',
     description: 'Resell oil perfumes. Low barrier to entry.',
     cost: 20000,
-    cashFlow: 4000, // 20% ROI
+    cashFlow: 4000,
     type: 'Side Hustle',
     tier: 'Low',
     risk: 0.05,
     riskDescription: '5% chance bottles break during shipping.',
-    onFailureMessage: 'The delivery guy smashed the package. Oils everywhere.'
+    onFailureMessage: 'The delivery guy smashed the package. Oils everywhere.',
+    maxLevel: 5,
+    upgradeCost: 15000,
+    upgradeFlowIncrease: 3000
   },
 
-  // --- MIDDLE CLASS (ROI Buffed to 15-20% to match Low Class but with scale) ---
+  // --- MIDDLE CLASS ---
   {
     id: 'mkt_pharmacy',
     name: 'Community Pharmacy',
     description: 'Open a registered pharmacy store in a residential area.',
     cost: 3500000,
-    cashFlow: 600000, // ~17% ROI (Was 250k/7%)
+    cashFlow: 600000,
     type: 'Business',
     tier: 'Middle',
     risk: 0.1,
     riskDescription: '10% chance of NAFDAC sealing the premises.',
-    onFailureMessage: 'NAFDAC sealed the shop due to "improper documentation". Heavy fines.'
+    onFailureMessage: 'NAFDAC sealed the shop due to "improper documentation". Heavy fines.',
+    maxLevel: 3,
+    upgradeCost: 2000000,
+    upgradeFlowIncrease: 400000
   },
   {
     id: 'mkt_uber',
     name: 'Uber Car Fleet',
     description: 'Buy a used Corolla for e-hailing. Weekly remittance.',
     cost: 4500000,
-    cashFlow: 800000, // ~17.7% ROI (Was 180k/4%)
+    cashFlow: 800000,
     type: 'Business',
     tier: 'Middle',
     risk: 0.3,
     riskDescription: '30% chance the driver wrecks the car.',
-    onFailureMessage: 'The driver crashed the car and vanished. Insurance was expired.'
+    onFailureMessage: 'The driver crashed the car and vanished. Insurance was expired.',
+    maxLevel: 10,
+    upgradeCost: 4000000,
+    upgradeFlowIncrease: 750000
   },
   {
     id: 'mkt_logistics',
     name: 'Logistics Bikes (3x)',
     description: 'Fleet of 3 delivery bikes servicing e-commerce vendors.',
     cost: 1800000,
-    cashFlow: 270000, // 15% ROI (Was 120k/6.6%)
+    cashFlow: 270000,
     type: 'Business',
     tier: 'Middle',
     risk: 0.2,
     riskDescription: '20% chance of seizure by local govt.',
-    onFailureMessage: 'LG officials seized the bikes for "sticker violation".'
+    onFailureMessage: 'LG officials seized the bikes for "sticker violation".',
+    maxLevel: 5,
+    upgradeCost: 1500000,
+    upgradeFlowIncrease: 250000
   },
 
-  // --- HIGH CLASS (ROI Buffed to 18-25% to make wealth acceleration possible) ---
+  // --- HIGH CLASS ---
   {
     id: 'mkt_gas',
     name: 'Cooking Gas Plant',
     description: 'Medium sized LPG refill station. Essential commodity.',
     cost: 25000000,
-    cashFlow: 5000000, // 20% ROI (Was 1.8M/7.2%)
+    cashFlow: 5000000,
     type: 'Business',
     tier: 'High',
     risk: 0.15,
     riskDescription: '15% chance of fire hazard or regulatory shutdown.',
-    onFailureMessage: 'DPR revoked the license due to safety proximity violations.'
+    onFailureMessage: 'DPR revoked the license due to safety proximity violations.',
+    maxLevel: 2,
+    upgradeCost: 15000000,
+    upgradeFlowIncrease: 3000000
   },
   {
     id: 'mkt_realestate',
     name: 'Rental Apartment Block',
     description: 'Block of 4 flats in a developing area. Steady yearly rent.',
     cost: 65000000,
-    cashFlow: 9000000, // ~13.8% ROI (Was 3.5M/5.3%) - Lower ROI but asset appreciates mentally
+    cashFlow: 9000000,
     type: 'Real Estate',
     tier: 'High',
     risk: 0.05,
     riskDescription: '5% chance of Omo-Onile issues.',
-    onFailureMessage: 'Omo-Onile came with court injunction claiming the land.'
+    onFailureMessage: 'Omo-Onile came with court injunction claiming the land.',
+    maxLevel: 5,
+    upgradeCost: 40000000,
+    upgradeFlowIncrease: 6000000
   },
   {
     id: 'mkt_tech',
@@ -319,7 +466,10 @@ export const MARKET_ITEMS: MarketItem[] = [
     tier: 'High',
     risk: 0.7,
     riskDescription: '70% chance startup fails. 10x return if successful upon exit.',
-    onFailureMessage: 'The founders pivoted to selling shoes, then shut down.'
+    onFailureMessage: 'The founders pivoted to selling shoes, then shut down.',
+    maxLevel: 1, // One-time shot per deal
+    upgradeCost: 0,
+    upgradeFlowIncrease: 0
   }
 ];
 
@@ -659,7 +809,7 @@ export const EVENTS: GameEvent[] = [
         cost: 50000,
         onSuccess: {
           message: 'You bought the POS terminal. It is now generating cash.',
-          asset: { id: 'mkt_pos_deal', name: 'POS Terminal (Deal)', type: 'Business', cost: 50000, cashFlow: 8000, currency: 'NGN' }
+          asset: { id: 'mkt_pos_deal', name: 'POS Terminal (Deal)', type: 'Business', cost: 50000, cashFlow: 8000, currency: 'NGN', level: 1, maxLevel: 1, upgradeCost: 0, upgradeFlowIncrease: 0 }
         }
       },
       {
@@ -670,7 +820,7 @@ export const EVENTS: GameEvent[] = [
         successChance: 0.6,
         onSuccess: {
           message: 'Success! They were desperate to sell. You got a bargain.',
-          asset: { id: 'mkt_pos_cheap', name: 'POS Terminal (Deal)', type: 'Business', cost: 35000, cashFlow: 8000, currency: 'NGN' },
+          asset: { id: 'mkt_pos_cheap', name: 'POS Terminal (Deal)', type: 'Business', cost: 35000, cashFlow: 8000, currency: 'NGN', level: 1, maxLevel: 1, upgradeCost: 0, upgradeFlowIncrease: 0 },
           moodChange: 5
         },
         onFailure: {
@@ -696,7 +846,7 @@ export const EVENTS: GameEvent[] = [
         cost: 20000,
         onSuccess: {
           message: 'You farmed steady tokens.',
-          asset: { id: 'a_crypto_farm', name: 'Crypto Staking', type: 'Paper Asset', cost: 20000, cashFlow: 5, currency: 'USD' }
+          asset: { id: 'a_crypto_farm', name: 'Crypto Staking', type: 'Paper Asset', cost: 20000, cashFlow: 5, currency: 'USD', level: 1, maxLevel: 5, upgradeCost: 20000, upgradeFlowIncrease: 2 }
         }
       },
       {
@@ -707,7 +857,7 @@ export const EVENTS: GameEvent[] = [
         successChance: 0.5,
         onSuccess: {
           message: 'To the Moon! The token 10x upon launch.',
-          asset: { id: 'a_crypto_moon', name: 'Moonbag Token', type: 'Paper Asset', cost: 100000, cashFlow: 150, currency: 'USD' },
+          asset: { id: 'a_crypto_moon', name: 'Moonbag Token', type: 'Paper Asset', cost: 100000, cashFlow: 150, currency: 'USD', level: 1, maxLevel: 1, upgradeCost: 0, upgradeFlowIncrease: 0 },
           moodChange: 20
         },
         onFailure: {

@@ -1,5 +1,5 @@
 
-export type AssetType = 'Business' | 'Real Estate' | 'Paper Asset' | 'Side Hustle';
+export type AssetType = 'Business' | 'Real Estate' | 'Paper Asset' | 'Side Hustle' | 'Equipment';
 export type LiabilityType = 'Loan' | 'Expense' | 'Family Obligation';
 export type Currency = 'NGN' | 'USD';
 export type LifestyleTier = 'Low' | 'Middle' | 'High';
@@ -12,8 +12,29 @@ export interface DreamItem {
   iconName: string;
 }
 
+export interface Skill {
+  id: string;
+  name: string;
+  cost: number;
+  description: string;
+  iconName: string;
+  reqAssetId?: string; // New: Requires owning an asset (e.g., Laptop)
+}
+
+export interface Gig {
+  id: string;
+  name: string;
+  description: string;
+  pay: number;
+  energyCost: number; // Health cost
+  moodCost: number;
+  reqSkillId?: string; // Optional requirement
+  cooldown?: number;
+}
+
 export interface Asset {
   id: string;
+  marketId?: string; // Link back to the market item
   name: string;
   type: AssetType;
   cost: number;
@@ -21,6 +42,10 @@ export interface Asset {
   currency: Currency; // NGN or USD
   resaleValue?: number;
   description?: string;
+  level: number;
+  maxLevel: number;
+  upgradeCost: number;
+  upgradeFlowIncrease: number;
 }
 
 export interface Liability {
@@ -87,6 +112,8 @@ export interface Player {
   lifestyle: LifestyleTier; // Current lifestyle tier
   dreamItem: DreamItem; // Selected dream goal
   hasPurchasedDream: boolean;
+  skills: string[]; // List of learned skill IDs
+  gigsPerformedThisMonth: number; // Track frequency
 }
 
 export type EventType = 'Opportunity' | 'Shock' | 'Market' | 'Social' | 'Economic' | 'Career';
@@ -156,6 +183,10 @@ export interface MarketItem {
   risk: number; // 0 to 1 (Failure chance)
   riskDescription: string;
   onFailureMessage: string;
+  // Scalability props
+  maxLevel: number;
+  upgradeCost: number;
+  upgradeFlowIncrease: number;
 }
 
 export interface GameState {
